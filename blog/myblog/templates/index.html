@@ -85,7 +85,7 @@
                 <div class="pageturn">
                     <ul class="pagelist">
 
-                        {% if all_blog.has_previous %}
+                        {% if blog.has_previous %}
                             <li class="long"><a href="?{{ blog.previous_page_number.querystring }}">上一页</a></li>
                         {% endif %}
 
@@ -100,6 +100,7 @@
                                 <li class="none"><a href="">...</a></li>
                             {% endif %}
                         {% endfor %}
+                        
                         {% if blog.has_next %}
                             <li class="long"><a href="?{{ blog.next_page_number.querystring }}">下一页</a></li>
                         {% endif %}
