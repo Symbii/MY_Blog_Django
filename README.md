@@ -320,14 +320,16 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 4. 在index.html 通过使用类似如下的，根据数据库中的内容显示对应内容：
 
-		{% for blog in all_blog %}
+```
+	{% for blog in all_blog %}
 	    <article>
 	    	{{ blog.title }}   #博客的标题
 			{{ blog.create_time|date:'Y-m-d' }}  #博客的发表时间，用装饰器date指定显示格式
 			{{ blog.category.name }}  博客的分类
 			{{ blog.content }}   博客的内容
 	    </article>
-		{% endfor %}
+	{% endfor %}
+```
 
 现在我们就有了样式，同时根据数据库内容，进行显示的首页：
 
@@ -373,44 +375,44 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 ```
 	class IndexView(View):
-    """
-    首页,继承view，as_view()自动根据请求，调用对应的方法
-    """
-    def get(self, request):
-        all_blog = Blog.objects.all().order_by('-id')
+	    """
+	    首页,继承view，as_view()自动根据请求，调用对应的方法
+	    """
+	    def get(self, request):
+		all_blog = Blog.objects.all().order_by('-id')
 
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
-            
-		 #设置每页只显示一篇，生成paginator对象
-        p = Paginator(all_blog, 1, request=request)
-        
-        #根据之前的到1-based page， 生成分页好的page对象
-        all_page_blog = p.page(page)
-        
-        #将分页好的page对象传入index.html
-        return render(request, 'index.html', {"blog": all_page_blog})
+		try:
+		    page = request.GET.get('page', 1)
+		except PageNotAnInteger:
+		    page = 1
+
+		#设置每页只显示一篇，生成paginator对象
+		p = Paginator(all_blog, 1, request=request)
+
+		#根据之前的到1-based page， 生成分页好的page对象
+		all_page_blog = p.page(page)
+
+		#将分页好的page对象传入index.html
+		return render(request, 'index.html', {"blog": all_page_blog})
 ```        
 这里贴一部分从lib中看到的paginator源码，帮助理解上面我写的：
     
-    	class Paginator(object):
-		    def __init__(self, object_list, per_page, orphans=0, allow_empty_first_page=True, request=None):
-		        self.object_list = object_list
-		        self.per_page = per_page
-		        self.orphans = orphans
-		        self.allow_empty_first_page = allow_empty_first_page
-		        self._num_pages = self._count = None
-		        self.request = request
-			def page(self, number):
-		        "Returns a Page object for the given 1-based page number."
-		        number = self.validate_number(number)
-		        bottom = (number - 1) * self.per_page
-		        top = bottom + self.per_page
-		        if top + self.orphans >= self.count:
-		            top = self.count
-		        return Page(self.object_list[bottom:top], number, self)
+	class Paginator(object):
+		def __init__(self, object_list, per_page, orphans=0, allow_empty_first_page=True, request=None):
+			self.object_list = object_list
+			self.per_page = per_page
+			self.orphans = orphans
+			self.allow_empty_first_page = allow_empty_first_page
+			self._num_pages = self._count = None
+			self.request = request
+		def page(self, number):
+			"Returns a Page object for the given 1-based page number."
+			number = self.validate_number(number)
+			bottom = (number - 1) * self.per_page
+			top = bottom + self.per_page
+			if top + self.orphans >= self.count:
+				top = self.count
+			return Page(self.object_list[bottom:top], number, self)
 
 ![](https://github.com/Symbii/MY_Blog_Django/blob/master/my_page.png)
 
