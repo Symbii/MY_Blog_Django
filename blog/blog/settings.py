@@ -133,7 +133,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 PAGINATION_SETTINGS = {
     'PAGE_RANGE_DISPLAYED': 3,    #中间显示的个数，中间和两边之间其他的以省略号显示
-    'MARGIN_PAGES_DISPLAYED': 2,  #靠近上一页和下一页两边显示的个数 
+    'MARGIN_PAGES_DISPLAYED': 1,  #靠近上一页和下一页两边显示的个数 
 
     'SHOW_FIRST_PAGE_WHEN_INVALID': True,
 }
