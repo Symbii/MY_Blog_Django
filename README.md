@@ -127,7 +127,7 @@
 
 这个时候会发现myblog 数据库中多了很多内容：
 
-![navicat][https://github.com/Symbii/MY_Blog_Django/blob/master/mysql.png]
+![navicat](https://github.com/Symbii/MY_Blog_Django/blob/master/mysql.png)
 
 ## 个人主页数据库设计
 
