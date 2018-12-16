@@ -5,7 +5,7 @@ from myblog.models import Blog
 
 class IndexView(View):
     """
-    首页
+    首页,继承view，自动根据请求，调用对应的方法
     """
     def get(self, request):
         all_blog = Blog.objects.all().order_by('-id')
