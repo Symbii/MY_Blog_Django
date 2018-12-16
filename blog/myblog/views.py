@@ -9,5 +9,13 @@ class IndexView(View):
     """
     def get(self, request):
         all_blog = Blog.objects.all().order_by('-id')
+
+        try:
+        page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+    
+        p = Paginator(objects, 5, request=request)
+
         return render(request, 'index.html', {"blog": all_blog})
 

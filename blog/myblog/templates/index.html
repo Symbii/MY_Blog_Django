@@ -12,7 +12,7 @@
     <div class="content-wrap">
         <div id="content" class="content">
             <section id="posts" class="posts-expand">
-                {% for each_blog in blog %}
+                {% for each_blog in blog.object_list %}
                     <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
 
                         <header class="post-header">
@@ -83,14 +83,30 @@
             <!--分页展示-->
             <nav class="pagination">
                 <div class="pageturn">
-                    <ul class="pagelist">                
-                        <li class="active"><a href="http://127.0.0.1/?page=1">1</a></li>
-                        <li class="none"><a href="http://127.0.0.1/">...</a></li>
-                        <li><a href="http://127.0.0.1/?page=3" class="page">3</a></li>
-                        <li class="long"><a href="http://127.0.0.1/?page=2">下一页</a></li>
+                    <ul class="pagelist">
+
+                        {% if all_blog.has_previous %}
+                            <li class="long"><a href="?{{ blog.previous_page_number.querystring }}">上一页</a></li>
+                        {% endif %}
+
+                        {% for page in blog.pages %}
+                            {% if page %}
+                                {% ifequal page blog.number %}
+                                    <li class="active"><a href="?{{ page.querystring }}">{{ page }}</a></li>
+                                {% else %}
+                                     <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
+                                {% endifequal %}
+                            {% else %}
+                                <li class="none"><a href="">...</a></li>
+                            {% endif %}
+                        {% endfor %}
+                        {% if blog.has_next %}
+                            <li class="long"><a href="?{{ blog.next_page_number.querystring }}">下一页</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </nav>
+
         </div>
     </div>
 {% endblock %}
