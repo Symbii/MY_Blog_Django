@@ -52,7 +52,7 @@
 用随机密码第一次登陆，我是使用navicat连接mysql，修改密码sql语句：
 	
 	ALTER USER 'root'@'localhost' IDENTIFIED BY 'xxxxxx';
-
+   
 >### 10. 修改setting.py
 	DATABASES = {
     'default': {
