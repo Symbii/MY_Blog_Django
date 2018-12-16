@@ -357,18 +357,21 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 1. 采用django-pure-pagination这个包，实现分页效果：
 
-	pip intall django-pure-pagination
+	`pip intall django-pure-pagination`
 
 2. 装好之后看pypi.org里面包的使用说明，这里我只想说一句Fxxk，这里作者自己写的需要在setting.py里面设置install_apps,但是这个包装完之后是在lib目录下的，所以根本不需要在install_apps添加的，我一度以为需要手动创建这个app[坑]，但是任然需要设置PAGINATION_SETTINGS的：
-	
+
+```
 	PAGINATION_SETTINGS = {
 	    'PAGE_RANGE_DISPLAYED': 3,    #中间显示的个数，中间和两边之间其他的以省略号显示
 	    'MARGIN_PAGES_DISPLAYED': 2,  #靠近上一页和下一页两边显示的个数 
 	    'SHOW_FIRST_PAGE_WHEN_INVALID': True,
 	}
+```
 
 3. 上面做完之后，就可以设置视图方法和修改index.html了，将IndexView类的get方法改为：
 
+```
 	class IndexView(View):
     """
     首页,继承view，as_view()自动根据请求，调用对应的方法
@@ -389,8 +392,8 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
         
         #将分页好的page对象传入index.html
         return render(request, 'index.html', {"blog": all_page_blog})
-        
-    这里贴一部分从lib中看到的paginator源码，帮助理解上面我写的：
+```        
+这里贴一部分从lib中看到的paginator源码，帮助理解上面我写的：
     
     	class Paginator(object):
 		    def __init__(self, object_list, per_page, orphans=0, allow_empty_first_page=True, request=None):
@@ -407,9 +410,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 		        top = bottom + self.per_page
 		        if top + self.orphans >= self.count:
 		            top = self.count
-		        return Page(self.object_list[bottom:top], number, self)	
-
-具体的分页效果如下图所示：
+		        return Page(self.object_list[bottom:top], number, self)
 
 ![](https://github.com/Symbii/MY_Blog_Django/blob/master/my_page.png)
 
