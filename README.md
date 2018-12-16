@@ -414,6 +414,8 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 				top = self.count
 			return Page(self.object_list[bottom:top], number, self)
 
+分页效果如下图所示：
+
 ![](https://github.com/Symbii/MY_Blog_Django/blob/master/my_page.png)
 
 ## 本项目GitHub地址:
