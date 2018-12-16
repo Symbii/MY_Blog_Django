@@ -331,7 +331,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 现在我们就有了样式，同时根据数据库内容，进行显示的首页：
 
-![][home.png]
+![home](https://github.com/Symbii/MY_Blog_Django/blob/master/home.png)
 
 
 ## 利用模版的继承
