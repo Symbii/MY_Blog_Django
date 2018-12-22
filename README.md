@@ -453,7 +453,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	1. Install MySQL Connector/C 6.1.10
 	2. run mysql_config
 
-> 由于把开发环境挪到阿里云了，在没有配置nginx情况下，只有同一网络下才能通过浏览器访问，所以必须配置一个vncserver方便我通过服务器桌面访问浏览器进行调试。通过yum groupinstall 好了gnome-desktop, vncserver, 发现通过vncview访问时候能连上，但是无法显示画面,黑屏。最后通过如下方式解决，具体也不知道到底哪些是必须步骤，但是最后一步vim /lib/systemd/system vncserver@.service之后就好了：
+> 由于把开发环境挪到阿里云了，在没有修改allow_host情况下，只有本机才能通过浏览器访问，所以必须配置一个vncserver方便我通过服务器桌面访问浏览器进行调试。通过yum groupinstall 好了gnome-desktop, vncserver, 发现通过vncview访问时候能连上，但是无法显示画面,黑屏。最后通过如下方式解决，具体也不知道到底哪些是必须步骤，但是最后一步vim /lib/systemd/system vncserver@.service之后就好了：
 
 	1. yum groupinstall Xfce
 	2. vim ~/.vnc/xstartup 修改为如下：
