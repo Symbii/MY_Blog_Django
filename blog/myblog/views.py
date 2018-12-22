@@ -1,3 +1,4 @@
+from pure_pagination import PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.views import View
 from myblog.models import Blog
@@ -11,11 +12,13 @@ class IndexView(View):
         all_blog = Blog.objects.all().order_by('-id')
 
         try:
-        page = request.GET.get('page', 1)
+            page = request.GET.get('page', 1)
         except PageNotAnInteger:
             page = 1
     
-        p = Paginator(objects, 5, request=request)
+        p = Paginator(all_blog, 1, request=request)
 
-        return render(request, 'index.html', {"blog": all_blog})
+        all_page_blog = p.page(page)
+
+        return render(request, 'index.html', {"blog": all_page_blog})
 
