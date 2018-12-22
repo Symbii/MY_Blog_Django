@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myblog.apps.MyblogConfig', #新加入的app
-    'pure-pagination',          #分页工具
+    #'pure-pagination',          #分页工具
 ]
 
 MIDDLEWARE = [
