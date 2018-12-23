@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'myblog',        #数据库名
         'USER':'root',           #用户名
         'PASSWORD':'159426',     #密码
-        'HOST':'127.0.0.1',      #本机地址
+        'HOST':'172.16.237.213', #DockerHost地址
         'PORT':'3306',           #端口
     }
 }

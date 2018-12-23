@@ -474,3 +474,13 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	3.vim /lib/systemd/system/vncserver@.service 添加如下两行：
 			VNCSERVERS="1:root"
 			VNCSERVERARGS[1]="-geometry 800x600"
+
+
+>  服务器招受到url注入攻击最后采取封禁了对方ip,同时更换了端口
+
+	iptables -I INPUT -s X.X.X.X -j DROP
+
+
+>  setting.py中把databse default的host改为服务器小网ip，导致mysql连接不上，最后定位为填小网ip时候，登陆的时候，登陆名为用户名@“host主机名字”，但是由于这个’用户名@host主机名字‘并没有设置mysql密码，但是django的配置中填写了密码，导致登陆不了，最终修改mysql的user表之后，登陆ok
+
+	GRANT ALL PRIVILEGES ON *.* TO '用户名字'@'host主机名字' IDENTIFIED BY '用户密码';
