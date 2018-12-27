@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 {% load staticfiles %}
-<!-- saved from url=(0023)http://www.liaoxin.online:8001/myblog/ -->
+<!-- saved from url=(0023)http://www.liaoxin.online:5001/myblog/ -->
 <html class="theme-next pisces use-motion" lang="zh-Hans"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 
@@ -18,9 +18,9 @@
 <link href="/static/css_js/main.css" rel="stylesheet" type="text/css">
 <link href="/static/css_js/extra.css" rel="stylesheet" type="text/css">
 
-<link rel="alternate" href="http://www.liaoxin.online:8001/myblog/rss" title="觅欣的部落" type="application/atom+xml">
+<link rel="alternate" href="http://www.liaoxin.online:5001/myblog/rss" title="温文尔雅阁" type="application/atom+xml">
 <link rel="shortcut icon" type="image/x-icon" href="/static/image/logo.ico">
-<link rel="canonical" href="http://www.liaoxin.online:8001/myblog/">
+<link rel="canonical" href="http://www.liaoxin.online:5001/myblog/">
 
 <!--搜索关键词高亮-->
 <style>
@@ -81,7 +81,7 @@
             <div class="header-inner">
                 <div class="site-meta ">
                     <div class="custom-logo-site-title">
-                        <a href="http://www.liaoxin.online:8001/myblog/" class="brand" rel="start" style="opacity: 1;">
+                        <a href="http://www.liaoxin.online:5001/myblog/" class="brand" rel="start" style="opacity: 1;">
                             <span class="logo-line-before"><i></i></span>
                             <span class="site-title" style="opacity: 1; top: 0px;">{% block name %} 博客显示的名字 {% endblock %}</span>
                             <span class="logo-line-after"><i></i></span>
@@ -101,21 +101,21 @@
                 <nav class="site-nav">
                     <ul id="menu" class="menu">
                         <li class="menu-item menu-item-home menu-item-active" style="opacity: 1; transform: translateY(0px);">
-                            <a href="http://www.liaoxin.online:8001/myblog/" rel="section">
+                            <a href="http://www.liaoxin.online:5001/myblog/" rel="section">
                                 <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
                                 首页
                             </a>
                         </li>
 
                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
-                            <a href="http://www.liaoxin.online:8001/myblog/archive/" rel="section">
+                            <a href="http://www.liaoxin.online:5001/myblog/archive/" rel="section">
                                 <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
                                 归档
                             </a>
                         </li>
 
                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
-                            <a href="http://www.liaoxin.online:8001/myblog/tags/" rel="section">
+                            <a href="http://www.liaoxin.online:5001/myblog/tags/" rel="section">
                                 <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
                                 标签
                             </a>
@@ -123,11 +123,11 @@
 
                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
 
-                            <a href="http://www.liaoxin.online:8001/myblog/#search" id="search" rel="section">
+                            <a href="http://www.liaoxin.online:5001/myblog/#search" id="search" rel="section">
                               <i class="menu-item-icon fa fa-search"></i>
                             </a>
 
-                            <form action="http://www.liaoxin.online:8001/myblog/search/">
+                            <form action="http://www.liaoxin.online:5001/myblog/search/">
                                 <input id="unit" type="search" name="q" placeholder="搜索">
                             </form>
 
@@ -153,25 +153,25 @@
                         <section class="site-overview sidebar-panel sidebar-panel-active">
                             <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
                                 <img class="site-author-image" itemprop="image" src="/static/image/Black_Zombie.jpeg" alt="Black_Zombie">
-                                <p class="site-author-name" itemprop="name">Black_Zombie</p>
+                                <p class="site-author-name" itemprop="name">温文尔雅</p>
                                 <p class="site-description motion-element" itemprop="description">仰天长啸仗剑红尘，冬去春来寒暑几</p>
                             </div>
                             <nav class="site-state motion-element">
-
+                                {% block blogcount %}
                                 <div class="site-state-item site-state-posts">
-                                    <a href="http://www.liaoxin.online:8001/myblog/archive/">
+                                    <a href="http://www.liaoxin.online:5001/myblog/archive/">
                                         <span class="site-state-item-count">15</span>
                                         <span class="site-state-item-name">日志</span>
                                     </a>
                                 </div>
-
+                                {% endblock %}
                                 <div class="site-state-item site-state-categories">
                                     <span class="site-state-item-count">3</span>
                                     <span class="site-state-item-name">分类</span>
                                 </div>
 
                                 <div class="site-state-item site-state-tags">
-                                    <a href="http://www.liaoxin.online:8001/myblog/tags/">
+                                    <a href="http://www.liaoxin.online:5001/myblog/tags/">
                                         <span class="site-state-item-count">8</span>
                                         <span class="site-state-item-name">标签</span>
                                     </a>
@@ -180,7 +180,7 @@
                             </nav>
 
                             <div class="feed-link motion-element">
-                                <a href="http://www.liaoxin.online:8001/myblog/rss/" rel="alternate">
+                                <a href="http://www.liaoxin.online:5001/myblog/rss/" rel="alternate">
                                     <i class="fa fa-rss"></i>
                                     RSS
                                 </a>
@@ -203,7 +203,7 @@
                                 <ul class="links-of-blogroll-list">
 
                                     <li class="links-of-blogroll-item">
-                                        <a href="http://www.liaoxin.online:8001/myblog" title="觅欣的部落" target="_blank">觅欣</a>
+                                        <a href="http://www.liaoxin.online:5001/myblog" title="温文尔雅阁" target="_blank">温文尔雅</a>
                                     </li>
                                 </ul>
                               </div>

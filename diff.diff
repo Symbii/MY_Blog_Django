@@ -1,0 +1,1479 @@
+diff --git a/blog/blog/__pycache__/urls.cpython-37.pyc b/blog/blog/__pycache__/urls.cpython-37.pyc
+index 091e50b..d35298b 100644
+Binary files a/blog/blog/__pycache__/urls.cpython-37.pyc and b/blog/blog/__pycache__/urls.cpython-37.pyc differ
+diff --git a/blog/blog/urls.py b/blog/blog/urls.py
+index 726d29d..dd6e5cf 100755
+--- a/blog/blog/urls.py
++++ b/blog/blog/urls.py
+@@ -20,3 +20,6 @@ urlpatterns = [
+     path('myblog/', include('myblog.urls')),
+     path('admin/', admin.site.urls),
+ ]
++
++#hander404 = 'myblog.views.page_not_found'
++#hander505 = 'myblog.views.page_errors'
+\ No newline at end of file
+diff --git a/blog/myblog/__pycache__/admin.cpython-37.pyc b/blog/myblog/__pycache__/admin.cpython-37.pyc
+index beacd4a..09a1dd5 100644
+Binary files a/blog/myblog/__pycache__/admin.cpython-37.pyc and b/blog/myblog/__pycache__/admin.cpython-37.pyc differ
+diff --git a/blog/myblog/__pycache__/urls.cpython-37.pyc b/blog/myblog/__pycache__/urls.cpython-37.pyc
+index 313a7b3..6045880 100644
+Binary files a/blog/myblog/__pycache__/urls.cpython-37.pyc and b/blog/myblog/__pycache__/urls.cpython-37.pyc differ
+diff --git a/blog/myblog/__pycache__/views.cpython-37.pyc b/blog/myblog/__pycache__/views.cpython-37.pyc
+index 0af20ff..857b989 100644
+Binary files a/blog/myblog/__pycache__/views.cpython-37.pyc and b/blog/myblog/__pycache__/views.cpython-37.pyc differ
+diff --git a/blog/myblog/admin.py b/blog/myblog/admin.py
+index 3913af9..90fc5e6 100755
+--- a/blog/myblog/admin.py
++++ b/blog/myblog/admin.py
+@@ -4,9 +4,56 @@ from myblog.models import Category, Tag, Blog, Comment, Counts
+ class BlogAdmin(admin.ModelAdmin):
+     list_display = ['title', 'create_time', 'click_nums', 'category']
+ 
++    def save_model(self, request, obj, form, change):
++        obj.save()
++        #统计博客数目
++        blog_nums = Blog.objects.count()
++        
++        try:
++            count_nums = Counts.objects.get()
++            count_nums.blog_nums = blog_nums
++        except Counts.DoesNotExist:
++            count_nums = Counts()
++            count_nums.blog_nums = blog_nums
++        finally:
++            count_nums.save()
++        #博客分类数目统计
++        #obj_category = obj.category
++        #category_number = obj_category.blog_set.count()
++        #obj_category.number = category_number
++        #obj_category.save()
++        #博客标签数目统计
++        #obj_tag_list = obj.tag.all()
++        #for obj_tag in obj_tag_list:
++        #    tag_number = obj_tag.blog_set.count()
++        #    obj_tag.number = tag_number
++        #    obj_tag.save()
++
++    def delete_model(self, request, obj):
++        # 统计博客数目
++        blog_nums = Blog.objects.count()
++        count_nums = Counts.objects.get()
++        count_nums.blog_nums = blog_nums - 1
++        count_nums.save()
++        # 博客分类数目统计
++        #obj_category = obj.category
++        #category_number = obj_category.blog_set.count()
++        #obj_category.number = category_number - 1
++        #obj_category.save()
++        # 博客标签数目统计
++        #obj_tag_list = obj.tag.all()
++        #for obj_tag in obj_tag_list:
++        #    tag_number = obj_tag.blog_set.count()
++        #    obj_tag.number = tag_number - 1
++        #    obj_tag.save()
++        obj.delete()
++
++class CountsAdmin(admin.ModelAdmin):
++    list_display = ['blog_nums', 'category_nums', 'tag_nums', 'visit_nums']
++
+ # Register your models here.
+ admin.site.register(Category)
+ admin.site.register(Tag)
+ admin.site.register(Blog, BlogAdmin)
+ admin.site.register(Comment)
+-admin.site.register(Counts)
+\ No newline at end of file
++admin.site.register(Counts, CountsAdmin)
+\ No newline at end of file
+diff --git a/blog/myblog/templates/archive.html b/blog/myblog/templates/archive.html
+index 7eb112a..afc30d2 100755
+--- a/blog/myblog/templates/archive.html
++++ b/blog/myblog/templates/archive.html
+@@ -1,487 +1,90 @@
+-<!DOCTYPE html>
+-<!-- saved from url=(0031)http://www.geerniya.cn/archive/ -->
+-<html class="theme-next pisces use-motion" lang="zh-Hans"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
++{% extends "base.html" %}
+ 
++<!--博客标题-->
++{% block title %}
++温文尔雅阁
++{% endblock %}
+ 
+-<meta http-equiv="X-UA-Compatible" content="IE=edge">
+-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+-<meta http-equiv="Cache-Control" content="no-transform">
+-<meta http-equiv="Cache-Control" content="no-siteapp">
+-<meta name="keywords" content="个人网站博客，next主题，">
+-<meta name="description" content="django框架建立的next主题个人博客">
++{% block name %}温文尔雅阁{% endblock %}
+ 
++{% block blogcount %}
++    <div class="site-state-item site-state-posts">
++        <a href="http://www.liaoxin.online:5001/myblog/archive/">
++            <span class="site-state-item-count">{{blog_nums}}</span>
++            <span class="site-state-item-name">日志</span>
++        </a>
++    </div>
++{% endblock %}
+ 
+-<link href="./归档_files/jquery.fancybox.css" rel="stylesheet" type="text/css">
+-<link href="./归档_files/font-awesome.min.css" rel="stylesheet" type="text/css">
+-<link href="./归档_files/main.css" rel="stylesheet" type="text/css">
+-<link href="./归档_files/extra.css" rel="stylesheet" type="text/css">
+-
+-<link rel="alternate" href="http://www.geerniya.cn/rss" title="往事如烟的博客" type="application/atom+xml">
+-<link rel="shortcut icon" type="image/x-icon" href="http://www.geerniya.cn/static/image/logo.ico">
+-<link rel="canonical" href="http://www.geerniya.cn/">
+-
+-<!--搜索关键词高亮-->
+-<style>
+-        span.highlighted {
+-            color: red;
+-        }
+-</style>
+-
+-<script src="./归档_files/push.js.下载"></script><script src="./归档_files/hm.js.下载"></script><script src="./归档_files/push.js(1).下载"></script><script src="./归档_files/hm.js(1).下载"></script><script type="text/javascript" id="hexo.configurations">
+-  var NexT = window.NexT || {};
+-  var CONFIG = {
+-    root: '/',
+-    scheme: 'Pisces',
+-    sidebar: {"position":"left","display":"always"},
+-    fancybox: true,
+-    motion: true,
+-    duoshuo: {
+-      userId: '925690',
+-      author: '博主'
+-    },
+-    algolia: {
+-      applicationID: '',
+-      apiKey: '',
+-      indexName: '',
+-      hits: {"per_page":10},
+-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+-    }
+-  };
+-</script>
+-
+-<script type="text/javascript">
+-    var _hmt = _hmt || [];
+-    (function() {
+-      var hm = document.createElement("script");
+-      hm.src = "https://hm.baidu.com/hm.js?c5127ebccef09f61efbb5ce4885b2c1f";
+-      var s = document.getElementsByTagName("script")[0];
+-      s.parentNode.insertBefore(hm, s);
+-    })();
+-</script>
+-
+-
+-<title> 
+-归档
+- </title>
+-
+-<style type="text/css">.fancybox-margin{margin-right:17px;}</style>
+-<style type="text/css">.fancybox-margin{margin-right:17px;}</style></head>
+-
+-<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+-
+-    <div class="container one-collumn sidebar-position-leftpage-home">
+-        <div class="headband"></div>
+-
+-        <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+-            <div class="header-inner">
+-                <div class="site-meta ">
+-                    <div class="custom-logo-site-title">
+-                        <a href="http://www.geerniya.cn/" class="brand" rel="start" style="opacity: 1;">
+-                            <span class="logo-line-before"><i></i></span>
+-                            <span class="site-title" style="opacity: 1; top: 0px;">往事如烟的博客</span>
+-                            <span class="logo-line-after"><i></i></span>
+-                        </a>
+-                    </div>
+-                    <p class="site-subtitle" style="opacity: 1; top: 0px;">To be a better man</p>
+-                 </div>
+-
+-                <div class="site-nav-toggle">
+-                  <button>
+-                    <span class="btn-bar"></span>
+-                    <span class="btn-bar"></span>
+-                    <span class="btn-bar"></span>
+-                  </button>
+-                </div>
+-
+-                <nav class="site-nav">
+-                    <ul id="menu" class="menu">
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                          <a href="http://www.geerniya.cn/" rel="section">
+-                              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+-                            首页
+-                          </a>
+-                        </li>
+-
+-                        <li class="menu-item menu-item-home menu-item-active" style="opacity: 1; transform: translateY(0px);">
+-                          <a href="http://www.geerniya.cn/archive/" rel="section">
+-                              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+-                            归档
+-                          </a>
+-                        </li>
+-
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                          <a href="http://www.geerniya.cn/tags/" rel="section">
+-                              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+-                            标签
+-                          </a>
+-                        </li>
+-
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-
+-                             <a href="http://www.geerniya.cn/archive/#search" id="search" rel="section">
+-                              <i class="menu-item-icon fa fa-search"></i>
+-                             </a>
+-
+-                            <form action="http://www.geerniya.cn/search/">
+-                                <input id="unit" type="search" name="q" placeholder="搜索">
+-                            </form>
+-
+-                        </li>
+-                    </ul>
+-                </nav>
+-
+-            </div>
+-        </header>
+-
+-        <main id="main" class="main">
+-            <div class="main-inner">
+-                <div class="sidebar-toggle">
+-                    <div class="sidebar-toggle-line-wrap">
+-                        <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+-                        <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+-                        <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+-                    </div>
+-                </div>
+-
+-                <aside id="sidebar" class="sidebar" style="margin-top: 302px; display: block;">
+-                    <div class="sidebar-inner">
+-                        <section class="site-overview sidebar-panel sidebar-panel-active">
+-                            <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+-                                <img class="site-author-image" itemprop="image" src="./归档_files/aobama.png" alt="geerniya">
+-                                <p class="site-author-name" itemprop="name">geerniya</p>
+-                                <p class="site-description motion-element" itemprop="description">请在此处添加一句鸡汤格言</p>
+-                            </div>
+-                            <nav class="site-state motion-element">
+-
+-                                <div class="site-state-item site-state-posts">
+-                                    <a href="http://www.geerniya.cn/archive/">
+-                                        <span class="site-state-item-count">15</span>
+-                                        <span class="site-state-item-name">日志</span>
+-                                    </a>
+-                                </div>
+-
+-                                <div class="site-state-item site-state-categories">
+-                                    <span class="site-state-item-count">3</span>
+-                                    <span class="site-state-item-name">分类</span>
+-                                </div>
+-
+-                                <div class="site-state-item site-state-tags">
+-                                    <a href="http://www.geerniya.cn/tags/">
+-                                        <span class="site-state-item-count">8</span>
+-                                        <span class="site-state-item-name">标签</span>
+-                                    </a>
+-                                </div>
+-
+-                            </nav>
+-
+-                            <div class="feed-link motion-element">
+-                                <a href="http://www.geerniya.cn/rss/" rel="alternate">
+-                                    <i class="fa fa-rss"></i>
+-                                    RSS
+-                                </a>
+-                            </div>
+-
+-                            <div class="links-of-author motion-element">
+-
+-                                <span class="links-of-author-item">
+-                                        <a href="https://github.com/geerniya" target="_blank" title="GitHub">
+-                                            <i class="fa fa-fw fa-github"></i>
+-                                            GitHub
+-                                        </a>
+-                                  </span>
+-
+-                                <span class="links-of-author-item">
+-                                    <a href="https://www.zhihu.com/people/geerniya" target="_blank" title="知乎">
+-                                        <i class="fa fa-book"></i>
+-                                        知乎
+-                                    </a>
+-                                </span>
+-
+-                                <span class="links-of-author-item">
+-                                    <a href="http://blog.csdn.net/geerniya" target="_blank" title="知乎">
+-                                        <i class="fa fa-fw fa-globe"></i>
+-                                        博客
+-                                    </a>
+-                                </span>
+-
+-                            </div>
+-
+-                            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+-                                <div class="links-of-blogroll-title">
+-                                    <i class="fa fa-link"></i>
+-                                    Links
+-                                </div>
+-                                <ul class="links-of-blogroll-list">
+-
+-                                    <li class="links-of-blogroll-item">
+-                                        <a href="http://www.jarjar.cn/" title="凤凰山博客" target="_blank">凤凰山博客</a>
+-                                    </li>
+-
+-                                    <li class="links-of-blogroll-item">
+-                                        <a href="https://www.zmrenwu.com/" title="追梦人物的博客" target="_blank">追梦人物的博客</a>
+-                                    </li>
+-
+-                                </ul>
+-                              </div>
+-
+-                      </section>
+-                    </div>
+-                </aside>
+ 
+-                
++<!--博客标题-->
++{% block content %}
+ <div class="content-wrap">
+     <div id="content" class="content">
+         <section id="posts" class="posts-collapse">
+             <span class="archive-move-on"></span>
+-            <span class="archive-page-counter">非常好! 目前共计 15 篇日志。 继续努力。</span>
+-
+-        
+-            
+-            <div class="collection-title">
+-            <h2 class="archive-year motion-element" id="archive-year-2017" style="opacity: 1; display: block; transform: translateX(0px);">2018</h2>
+-            </div>
+-
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+-
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/3/" itemprop="url">
+-                            <span itemprop="name">Python学习——Hailstone 冰雹序列</span>
+-                         </a>
+-                    </h1>
+-
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    03-22
+-                        </time>
+-                      </div>
+-
+-                    </header>
+-                  </article>
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+-
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/4/" itemprop="url">
+-                            <span itemprop="name">尝试一个很短的博客</span>
+-                         </a>
+-                    </h1>
+-
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    02-17
+-                        </time>
+-                      </div>
+-
+-                    </header>
+-                  </article>
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+-
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/2/" itemprop="url">
+-                            <span itemprop="name">我的第二篇博客</span>
+-                         </a>
+-                    </h1>
+-
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    02-08
+-                        </time>
+-                      </div>
+-
+-                    </header>
+-                  </article>
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+-
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/5/" itemprop="url">
+-                            <span itemprop="name">这是新的尝试</span>
+-                         </a>
+-                    </h1>
+-
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    01-29
+-                        </time>
+-                      </div>
+-
+-                    </header>
+-                  </article>
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+-
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/16/" itemprop="url">
+-                            <span itemprop="name">这篇blog测试高亮显示</span>
+-                         </a>
+-                    </h1>
+-
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    01-26
+-                        </time>
+-                      </div>
+-
+-                    </header>
+-                  </article>
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+-
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/15/" itemprop="url">
+-                            <span itemprop="name">django学习——解决博客评论中长串单个英文字母或数字不能换行的问题</span>
+-                         </a>
+-                    </h1>
+-
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    01-25
+-                        </time>
+-                      </div>
++            <span class="archive-page-counter">目前共计 {{ blog_nums }} 篇日志。</span>
+ 
+-                    </header>
+-                  </article>
+-                
+-                    <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+-                    <header class="post-header">
+ 
+-                    <h1 class="post-title">
+-                        <a class="post-title-link" href="http://www.geerniya.cn/blog/14/" itemprop="url">
+-                            <span itemprop="name">尝试标签云</span>
+-                         </a>
+-                    </h1>
++            {% regroup all_archive.object_list by create_time.year as dates_by_year %}
+ 
+-                    <div class="post-meta">
+-                        <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
+-                    01-24
+-                        </time>
+-                      </div>
++                {% for year in dates_by_year %}
++                    <div class="collection-title">
++                        <h2 class="archive-year motion-element" id="archive-year-2018" style="opacity: 1; display: block; transform: translateX(0px);">{{ year.grouper }}</h2>
++                    </div>
++                    {% for blog in year.list %}
++                        <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
++                            <header class="post-header">
+ 
+-                    </header>
+-                  </article>
+-                
++                                <h1 class="post-title">
++                                    <a class="post-title-link" href="{% url 'blog_id' blog.id %}" itemprop="url">
++                                        <span itemprop="name">{{ blog.title }}</span>
++                                    </a>
++                                </h1>
+ 
+-            
++                                <div class="post-meta">
++                                    <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
++                                    {{ blog.create_time|date:"m-d" }}
++                                    </time>
++                                </div>
+ 
++                            </header>
++                        </article>
++                    {% endfor %}
++                {% endfor %}
+         </section>
+ 
++        <!--分页展示-->
++        <nav class="pagination">
++            <div class="pageturn">
++                <ul class="pagelist">
++
++                    {% if all_archive.has_previous %}
++                        <li class="long"><a href="?{{ all_archive.previous_page_number.querystring }}">上一页</a></li>
++                    {% endif %}
++
++                    {% for page in all_archive.pages %}
++                    {% if page %}
++                        {% ifequal page all_archive.number %}
++                            <li class="active"><a href="?{{ page.querystring }}">{{ page }}</a></li>
++                        {% else %}
++                            <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
++                        {% endifequal %}
++                    {% else %}
++                        <li class="none"><a href="">...</a></li>
++                    {% endif %}
++                    {% endfor %}
++                    {% if all_archive.has_next %}
++                        <li class="long"><a href="?{{ all_archive.next_page_number.querystring }}">下一页</a></li>
++                    {% endif %}
++
++                </ul>
++            </div>
++        </nav>
+ 
+ 
+-          <!--分页展示-->
+-<nav class="pagination">
+-    <div class="pageturn">
+-        <ul class="pagelist">
+-
+-        
+-
+-        
+-        
+-            
+-                <li class="active"><a href="http://www.geerniya.cn/archive/?page=1">1</a></li>
+-            
+-        
+-        
+-        
+-            <li class="none"><a href="http://www.geerniya.cn/archive/">...</a></li>
+-        
+-        
+-        
+-            
+-                 <li><a href="http://www.geerniya.cn/archive/?page=3" class="page">3</a></li>
+-            
+-        
+-        
+-        
+-            <li class="long"><a href="http://www.geerniya.cn/archive/?page=2">下一页</a></li>
+-        
+-
+-        </ul>
+-    </div>
+-</nav>
+-
+ 
+     </div>
+ 
+ </div>
+-
+-
+-            </div>
+-        </main>
+-
+-        <footer id="footer" class="footer">
+-            <div class="footer-inner">
+-                <div class="copyright">
+-                     ©  2017 -
+-                    <span itemprop="copyrightYear">2018</span>
+-                    <span class="with-love">
+-                        <i class="fa fa-heart"></i>
+-                    </span>
+-                    <span class="author" itemprop="copyrightHolder">geerniya</span>
+-                </div>
+-                <div class="powered-by">
+-                    豫ICP备18002345号-1
+-                </div>
+-                <div class="theme-info">
+-                    Supported by <a href="https://www.aliyun.com/">阿里云</a>
+-                </div>
+-            </div>
+-        </footer>
+-
+-        <div class="back-to-top back-to-top-on">
+-          <i class="fa fa-arrow-up"></i>
+-        </div>
+-    </div>
+-
+-
+-    <script type="text/javascript">
+-      if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+-        window.Promise = null;
+-      }
+-    </script>
+-    <script type="text/javascript" src="./归档_files/index.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/fastclick.min.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/jquery.lazyload.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/velocity.min.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/velocity.ui.min.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/jquery.fancybox.pack.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/utils.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/motion.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/affix.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/pisces.js.下载"></script>
+-    <script type="text/javascript" src="./归档_files/bootstrap.js.下载"></script>
+-    <script>
+-      var cloudTieConfig = {
+-        url: document.location.href,
+-        sourceId: "",
+-        productKey: "35099139b61244da8d227be2d3dedbbd",
+-        target: "cloud-tie-wrapper"
+-      };
+-    </script>
+-    <script>
+-    (function(){
+-        var bp = document.createElement('script');
+-        var curProtocol = window.location.protocol.split(':')[0];
+-        if (curProtocol === 'https') {
+-            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+-        }
+-        else {
+-            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+-        }
+-        var s = document.getElementsByTagName("script")[0];
+-        s.parentNode.insertBefore(bp, s);
+-    })();
+-    </script>
+-
+-    
+-
+-
+-
+-</body></html>
+\ No newline at end of file
++{% endblock %}
+\ No newline at end of file
+diff --git a/blog/myblog/templates/base.html b/blog/myblog/templates/base.html
+index e57b3d8..5228e40 100644
+--- a/blog/myblog/templates/base.html
++++ b/blog/myblog/templates/base.html
+@@ -1,7 +1,7 @@
+ <!DOCTYPE html>
+ 
+ {% load staticfiles %}
+-<!-- saved from url=(0023)http://www.liaoxin.online:8001/myblog/ -->
++<!-- saved from url=(0023)http://www.liaoxin.online:5001/myblog/ -->
+ <html class="theme-next pisces use-motion" lang="zh-Hans"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+ 
+ 
+@@ -18,9 +18,9 @@
+ <link href="/static/css_js/main.css" rel="stylesheet" type="text/css">
+ <link href="/static/css_js/extra.css" rel="stylesheet" type="text/css">
+ 
+-<link rel="alternate" href="http://www.liaoxin.online:8001/myblog/rss" title="觅欣的部落" type="application/atom+xml">
++<link rel="alternate" href="http://www.liaoxin.online:5001/myblog/rss" title="温文尔雅阁" type="application/atom+xml">
+ <link rel="shortcut icon" type="image/x-icon" href="/static/image/logo.ico">
+-<link rel="canonical" href="http://www.liaoxin.online:8001/myblog/">
++<link rel="canonical" href="http://www.liaoxin.online:5001/myblog/">
+ 
+ <!--搜索关键词高亮-->
+ <style>
+@@ -81,7 +81,7 @@
+             <div class="header-inner">
+                 <div class="site-meta ">
+                     <div class="custom-logo-site-title">
+-                        <a href="http://www.liaoxin.online:8001/myblog/" class="brand" rel="start" style="opacity: 1;">
++                        <a href="http://www.liaoxin.online:5001/myblog/" class="brand" rel="start" style="opacity: 1;">
+                             <span class="logo-line-before"><i></i></span>
+                             <span class="site-title" style="opacity: 1; top: 0px;">{% block name %} 博客显示的名字 {% endblock %}</span>
+                             <span class="logo-line-after"><i></i></span>
+@@ -101,21 +101,21 @@
+                 <nav class="site-nav">
+                     <ul id="menu" class="menu">
+                         <li class="menu-item menu-item-home menu-item-active" style="opacity: 1; transform: translateY(0px);">
+-                            <a href="http://www.liaoxin.online:8001/myblog/" rel="section">
++                            <a href="http://www.liaoxin.online:5001/myblog/" rel="section">
+                                 <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+                                 首页
+                             </a>
+                         </li>
+ 
+                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                            <a href="http://www.liaoxin.online:8001/myblog/archive/" rel="section">
++                            <a href="http://www.liaoxin.online:5001/myblog/archive/" rel="section">
+                                 <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+                                 归档
+                             </a>
+                         </li>
+ 
+                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                            <a href="http://www.liaoxin.online:8001/myblog/tags/" rel="section">
++                            <a href="http://www.liaoxin.online:5001/myblog/tags/" rel="section">
+                                 <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+                                 标签
+                             </a>
+@@ -123,11 +123,11 @@
+ 
+                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+ 
+-                            <a href="http://www.liaoxin.online:8001/myblog/#search" id="search" rel="section">
++                            <a href="http://www.liaoxin.online:5001/myblog/#search" id="search" rel="section">
+                               <i class="menu-item-icon fa fa-search"></i>
+                             </a>
+ 
+-                            <form action="http://www.liaoxin.online:8001/myblog/search/">
++                            <form action="http://www.liaoxin.online:5001/myblog/search/">
+                                 <input id="unit" type="search" name="q" placeholder="搜索">
+                             </form>
+ 
+@@ -153,25 +153,25 @@
+                         <section class="site-overview sidebar-panel sidebar-panel-active">
+                             <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+                                 <img class="site-author-image" itemprop="image" src="/static/image/Black_Zombie.jpeg" alt="Black_Zombie">
+-                                <p class="site-author-name" itemprop="name">Black_Zombie</p>
++                                <p class="site-author-name" itemprop="name">温文尔雅</p>
+                                 <p class="site-description motion-element" itemprop="description">仰天长啸仗剑红尘，冬去春来寒暑几</p>
+                             </div>
+                             <nav class="site-state motion-element">
+-
++                                {% block blogcount %}
+                                 <div class="site-state-item site-state-posts">
+-                                    <a href="http://www.liaoxin.online:8001/myblog/archive/">
++                                    <a href="http://www.liaoxin.online:5001/myblog/archive/">
+                                         <span class="site-state-item-count">15</span>
+                                         <span class="site-state-item-name">日志</span>
+                                     </a>
+                                 </div>
+-
++                                {% endblock %}
+                                 <div class="site-state-item site-state-categories">
+                                     <span class="site-state-item-count">3</span>
+                                     <span class="site-state-item-name">分类</span>
+                                 </div>
+ 
+                                 <div class="site-state-item site-state-tags">
+-                                    <a href="http://www.liaoxin.online:8001/myblog/tags/">
++                                    <a href="http://www.liaoxin.online:5001/myblog/tags/">
+                                         <span class="site-state-item-count">8</span>
+                                         <span class="site-state-item-name">标签</span>
+                                     </a>
+@@ -180,7 +180,7 @@
+                             </nav>
+ 
+                             <div class="feed-link motion-element">
+-                                <a href="http://www.liaoxin.online:8001/myblog/rss/" rel="alternate">
++                                <a href="http://www.liaoxin.online:5001/myblog/rss/" rel="alternate">
+                                     <i class="fa fa-rss"></i>
+                                     RSS
+                                 </a>
+@@ -203,7 +203,7 @@
+                                 <ul class="links-of-blogroll-list">
+ 
+                                     <li class="links-of-blogroll-item">
+-                                        <a href="http://www.liaoxin.online:8001/myblog" title="觅欣的部落" target="_blank">觅欣</a>
++                                        <a href="http://www.liaoxin.online:5001/myblog" title="温文尔雅阁" target="_blank">温文尔雅</a>
+                                     </li>
+                                 </ul>
+                               </div>
+diff --git a/blog/myblog/templates/blog-detail.html b/blog/myblog/templates/blog-detail.html
+index c2b4ccf..c492840 100755
+--- a/blog/myblog/templates/blog-detail.html
++++ b/blog/myblog/templates/blog-detail.html
+@@ -1,346 +1,97 @@
+-<!DOCTYPE html>
+-<!-- saved from url=(0030)http://www.geerniya.cn/blog/4/ -->
+-<html class="theme-next pisces use-motion" lang="zh-Hans"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
++{% extends 'base.html' %}
+ 
++{% block title %}{{ blog.title }}{% endblock %}
+ 
+-<meta http-equiv="X-UA-Compatible" content="IE=edge">
+-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+-<meta http-equiv="Cache-Control" content="no-transform">
+-<meta http-equiv="Cache-Control" content="no-siteapp">
+-<meta name="keywords" content="个人网站博客，next主题，">
+-<meta name="description" content="django框架建立的next主题个人博客">
++{% block name %}温文尔雅阁{% endblock %}
+ 
++{% block blogcount %}
++    <div class="site-state-item site-state-posts">
++        <a href="http://www.liaoxin.online:5001/myblog/archive/">
++            <span class="site-state-item-count">{{blog_nums}}</span>
++            <span class="site-state-item-name">日志</span>
++        </a>
++    </div>
++{% endblock %}
+ 
+-<link href="./尝试一个很短的博客_files/jquery.fancybox.css" rel="stylesheet" type="text/css">
+-<link href="./尝试一个很短的博客_files/font-awesome.min.css" rel="stylesheet" type="text/css">
+-<link href="./尝试一个很短的博客_files/main.css" rel="stylesheet" type="text/css">
+-<link href="./尝试一个很短的博客_files/extra.css" rel="stylesheet" type="text/css">
+-
+-<link rel="alternate" href="http://www.geerniya.cn/rss" title="往事如烟的博客" type="application/atom+xml">
+-<link rel="shortcut icon" type="image/x-icon" href="http://www.geerniya.cn/static/image/logo.ico">
+-<link rel="canonical" href="http://www.geerniya.cn/">
+-
+-<!--搜索关键词高亮-->
+-<style>
+-        span.highlighted {
+-            color: red;
+-        }
+-</style>
+-
+-<script src="./尝试一个很短的博客_files/push.js.下载"></script><script src="./尝试一个很短的博客_files/hm.js.下载"></script><script src="./尝试一个很短的博客_files/push.js(1).下载"></script><script src="./尝试一个很短的博客_files/hm.js(1).下载"></script><script type="text/javascript" id="hexo.configurations">
+-  var NexT = window.NexT || {};
+-  var CONFIG = {
+-    root: '/',
+-    scheme: 'Pisces',
+-    sidebar: {"position":"left","display":"always"},
+-    fancybox: true,
+-    motion: true,
+-    duoshuo: {
+-      userId: '925690',
+-      author: '博主'
+-    },
+-    algolia: {
+-      applicationID: '',
+-      apiKey: '',
+-      indexName: '',
+-      hits: {"per_page":10},
+-      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+-    }
+-  };
+-</script>
+-
+-<script type="text/javascript">
+-    var _hmt = _hmt || [];
+-    (function() {
+-      var hm = document.createElement("script");
+-      hm.src = "https://hm.baidu.com/hm.js?c5127ebccef09f61efbb5ce4885b2c1f";
+-      var s = document.getElementsByTagName("script")[0];
+-      s.parentNode.insertBefore(hm, s);
+-    })();
+-</script>
+-
+-
+-<title> 
+-尝试一个很短的博客
+- </title>
+-
+-<style type="text/css">.fancybox-margin{margin-right:17px;}</style>
+-<style type="text/css">.fancybox-margin{margin-right:17px;}</style></head>
+-
+-<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+-
+-    <div class="container one-collumn sidebar-position-leftpage-home">
+-        <div class="headband"></div>
+-
+-        <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+-            <div class="header-inner">
+-                <div class="site-meta ">
+-                    <div class="custom-logo-site-title">
+-                        <a href="http://www.geerniya.cn/" class="brand" rel="start" style="opacity: 1;">
+-                            <span class="logo-line-before"><i></i></span>
+-                            <span class="site-title" style="opacity: 1; top: 0px;">往事如烟的博客</span>
+-                            <span class="logo-line-after"><i></i></span>
+-                        </a>
+-                    </div>
+-                    <p class="site-subtitle" style="opacity: 1; top: 0px;">To be a better man</p>
+-                 </div>
+-
+-                <div class="site-nav-toggle">
+-                  <button>
+-                    <span class="btn-bar"></span>
+-                    <span class="btn-bar"></span>
+-                    <span class="btn-bar"></span>
+-                  </button>
+-                </div>
+-
+-                <nav class="site-nav">
+-                    <ul id="menu" class="menu">
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                          <a href="http://www.geerniya.cn/" rel="section">
+-                              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+-                            首页
+-                          </a>
+-                        </li>
+-
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                          <a href="http://www.geerniya.cn/archive/" rel="section">
+-                              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+-                            归档
+-                          </a>
+-                        </li>
+-
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-                          <a href="http://www.geerniya.cn/tags/" rel="section">
+-                              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+-                            标签
+-                          </a>
+-                        </li>
+-
+-                        <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
+-
+-                             <a href="http://www.geerniya.cn/blog/4/#search" id="search" rel="section">
+-                              <i class="menu-item-icon fa fa-search"></i>
+-                             </a>
+-
+-                            <form action="http://www.geerniya.cn/search/">
+-                                <input id="unit" type="search" name="q" placeholder="搜索">
+-                            </form>
+-
+-                        </li>
+-                    </ul>
+-                </nav>
+-
+-            </div>
+-        </header>
+-
+-        <main id="main" class="main">
+-            <div class="main-inner">
+-                <div class="sidebar-toggle">
+-                    <div class="sidebar-toggle-line-wrap">
+-                        <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+-                        <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+-                        <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+-                    </div>
+-                </div>
+-
+-                <aside id="sidebar" class="sidebar" style="margin-top: 302px; display: block;">
+-                    <div class="sidebar-inner">
+-                        <section class="site-overview sidebar-panel sidebar-panel-active">
+-                            <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+-                                <img class="site-author-image" itemprop="image" src="./尝试一个很短的博客_files/aobama.png" alt="geerniya">
+-                                <p class="site-author-name" itemprop="name">geerniya</p>
+-                                <p class="site-description motion-element" itemprop="description">请在此处添加一句鸡汤格言</p>
+-                            </div>
+-                            <nav class="site-state motion-element">
+-
+-                                <div class="site-state-item site-state-posts">
+-                                    <a href="http://www.geerniya.cn/archive/">
+-                                        <span class="site-state-item-count">15</span>
+-                                        <span class="site-state-item-name">日志</span>
+-                                    </a>
+-                                </div>
+-
+-                                <div class="site-state-item site-state-categories">
+-                                    <span class="site-state-item-count">3</span>
+-                                    <span class="site-state-item-name">分类</span>
+-                                </div>
+-
+-                                <div class="site-state-item site-state-tags">
+-                                    <a href="http://www.geerniya.cn/tags/">
+-                                        <span class="site-state-item-count">8</span>
+-                                        <span class="site-state-item-name">标签</span>
+-                                    </a>
+-                                </div>
+-
+-                            </nav>
+-
+-                            <div class="feed-link motion-element">
+-                                <a href="http://www.geerniya.cn/rss/" rel="alternate">
+-                                    <i class="fa fa-rss"></i>
+-                                    RSS
+-                                </a>
+-                            </div>
+-
+-                            <div class="links-of-author motion-element">
+-
+-                                <span class="links-of-author-item">
+-                                        <a href="https://github.com/geerniya" target="_blank" title="GitHub">
+-                                            <i class="fa fa-fw fa-github"></i>
+-                                            GitHub
+-                                        </a>
+-                                  </span>
+-
+-                                <span class="links-of-author-item">
+-                                    <a href="https://www.zhihu.com/people/geerniya" target="_blank" title="知乎">
+-                                        <i class="fa fa-book"></i>
+-                                        知乎
+-                                    </a>
+-                                </span>
+-
+-                                <span class="links-of-author-item">
+-                                    <a href="http://blog.csdn.net/geerniya" target="_blank" title="知乎">
+-                                        <i class="fa fa-fw fa-globe"></i>
+-                                        博客
+-                                    </a>
+-                                </span>
+-
+-                            </div>
+-
+-                            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+-                                <div class="links-of-blogroll-title">
+-                                    <i class="fa fa-link"></i>
+-                                    Links
+-                                </div>
+-                                <ul class="links-of-blogroll-list">
+-
+-                                    <li class="links-of-blogroll-item">
+-                                        <a href="http://www.jarjar.cn/" title="凤凰山博客" target="_blank">凤凰山博客</a>
+-                                    </li>
+-
+-                                    <li class="links-of-blogroll-item">
+-                                        <a href="https://www.zmrenwu.com/" title="追梦人物的博客" target="_blank">追梦人物的博客</a>
+-                                    </li>
+-
+-                                </ul>
+-                              </div>
+-
+-                      </section>
+-                    </div>
+-                </aside>
+-
+-                
++{% block content %}
+ <div class="content-wrap">
+     <div id="content" class="content">
+         <div id="posts" class="posts-expand">
+             <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
+ 
+-            <header class="post-header">
++                <header class="post-header">
+ 
+-                <h1 class="post-title" itemprop="name headline">尝试一个很短的博客</h1>
++                    <h1 class="post-title" itemprop="name headline">{{ blog.title }}</h1>
+ 
+-                <div class="post-meta">
+-                    <span class="post-time">
+-                        <span class="post-meta-item-icon">
+-                            <i class="fa fa-calendar-o"></i>
+-                        </span>
+-                        <span class="post-meta-item-text">发表于</span>
+-                        <time title="Post created" itemprop="dateCreated datePublished" datetime="#">
+-                            2018-02-17
+-                        </time>
+-                  </span>
+-
+-                    <span class="post-category">
+-
+-                        <span class="post-meta-divider">|</span>
+-                        <span class="post-meta-item-icon">
+-                            <i class="fa fa-folder-o"></i>
+-                        </span>
+-                        <span class="post-meta-item-text">分类于</span>
+-                        <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+-                            <a href="http://www.geerniya.cn/category/%E7%94%9F%E6%B4%BB/" itemprop="url" rel="index">
+-                                <span itemprop="name">生活</span>
++                    <div class="post-meta">
++                        <span class="post-comments-count">
++                            <span class="post-meta-divider">|</span>
++                            <span class="post-meta-item-icon">
++                                <i class="fa fa-comment-o"></i>
++                            </span>
++                            <a class="cloud-tie-join-count" href="#comment" itemprop="discussionUrl">
++                                <span class="post-comments-count join-count" itemprop="commentCount"></span>
+                             </a>
+                         </span>
+-                    </span>
+-
+-                    <span class="post-comments-count">
+-                        <span class="post-meta-divider">|</span>
+-                        <span class="post-meta-item-icon">
+-                            <i class="fa fa-comment-o"></i>
+-                        </span>
+-                        <a class="cloud-tie-join-count" href="http://www.geerniya.cn/blog/4/#comment" itemprop="discussionUrl">
+-                            <span class="post-comments-count join-count" itemprop="commentCount"></span>
+-                        </a>
+-                    </span>
+-
+-                </div>
+-            </header>
+-
+-            <div class="post-body" itemprop="articleBody">
+-                <blockquote>
+-<p>尝试一个很短的博客</p>
+-</blockquote>
+-<p>尝试一个很短的博客</p>
+-<p>它真的很短！</p>
+-<p>——The End——</p>
+-            </div>
+-
+-
+-            <div>
+-                <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+-                <div>觉得不错，支持一下！</div>
+-                <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById(&#39;QR&#39;); if (qr.style.display === &#39;none&#39;) {qr.style.display=&#39;block&#39;;} else {qr.style.display=&#39;none&#39;}">
+-                <span>赏</span>
+-                </button>
+-                <div id="QR" style="display: none;">
+-
+-                    <div id="wechat" style="display: inline-block">
+-                      <a href="./尝试一个很短的博客_files/weixin.jpg" class="fancybox" rel="group"><img id="wechat_qr" src="./尝试一个很短的博客_files/weixin.jpg" alt="geerniya WeChat Pay"></a>
+-                      <p>微信打赏</p>
+                     </div>
++                </header>
+ 
++                <div class="post-body" itemprop="articleBody">
+ 
+-                    <div id="alipay" style="display: inline-block">
+-                      <a href="./尝试一个很短的博客_files/zhifubao.jpg" class="fancybox" rel="group"><img id="alipay_qr" src="./尝试一个很短的博客_files/zhifubao.jpg" alt="geerniya Alipay"></a>
+-                      <p>支付宝打赏</p>
+-                    </div>
++                    {{ blog.content|safe }}
+ 
+                 </div>
+-            </div>
+-            </div>
+ 
+-            <footer class="post-footer">
+ 
+-                <div class="post-tags">
+-                    
+-                        <a href="http://www.geerniya.cn/tags/linux/" rel="tag"># linux</a>
++                <div>
++                    <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
++                    <div>觉得不错，支持一下！</div>
++                    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById(&#39;QR&#39;); if (qr.style.display === &#39;none&#39;) {qr.style.display=&#39;block&#39;;} else {qr.style.display=&#39;none&#39;}">
++                    <span>赏</span>
++                    </button>
++
++                    <!--
++                    <div id="QR" style="display: none;">
++
++                        <div id="wechat" style="display: inline-block">
++                        <a href="/static/image/weixin.jpg" class="fancybox" rel="group"><img id="wechat_qr" src="/static/image/weixin.jpg" alt="symbii WeChat Pay"></a>
++                        <p>微信打赏</p>
++                        </div>
++                        <div id="alipay" style="display: inline-block">
++                        <a href="/static/image/zhifubao.jpg" class="fancybox" rel="group"><img id="alipay_qr" src="/static/image/zhifubao.jpg" alt="symbii Alipay"></a>
++                        <p>支付宝打赏</p>
++                        </div>
+                     
++                    </div>
++                    -->
++                </div>
+                 </div>
+ 
+-                <div class="post-nav">
+-                    <div class="post-nav-next post-nav-item">
++                <footer class="post-footer">
++                    <div class="post-nav">
++                        <div class="post-nav-next post-nav-item">
++                            {% if has_prev %}
++                                <a href="{% url 'blog_id' blog_prev.id %}" rel="prev" title="{{ blog_prev.title }}">
++                                    <i class="fa fa-chevron-left"></i> {{ blog_prev.title }}
++                                </a>
++                            {% endif %}
++                        </div>
+ 
+-                      
+-                        <a href="http://www.geerniya.cn/blog/3/" rel="prev" title="Python学习——Hailstone 冰雹序列">
+-                        <i class="fa fa-chevron-left"></i> Python学习——Hailstone 冰雹序列
+-                        </a>
+-                      
++                        <span class="post-nav-divider"></span>
+ 
+-                    </div>
++                        <div class="post-nav-prev post-nav-item">
+ 
+-                    <span class="post-nav-divider"></span>
++                            {% if has_next %}
++                                <a href="{% url 'blog_id' blog_next.id %}" rel="next" title="{{ blog_next.title }}">
++                                    {{ blog_next.title }} <i class="fa fa-chevron-right"></i>
++                                </a>
++                            {% endif %}
+ 
+-                    <div class="post-nav-prev post-nav-item">
+-                        
+-                         <a href="http://www.geerniya.cn/blog/5/" rel="next" title="这是新的尝试">
+-                        这是新的尝试 <i class="fa fa-chevron-right"></i>
+-                         </a>
+-                        
+ 
++                        </div>
+                     </div>
+-                </div>
+ 
+-            </footer>
++                </footer>
+ 
+             </article>
+         </div>
+@@ -349,138 +100,4 @@
+     </div>
+ </div>
+ 
+-<div class="content-wrap-comment">
+-    <div id="comment"></div>
+-    <h2 class="comment-add">发表评论</h2>
+-
+-    <form class="comment-form" id="jsStayForm">
+-        <input type="hidden" name="csrfmiddlewaretoken" value="kn3mVEJwKPjjtcrVxtGgjaAmcyH5LlSRzzmCMRHgQqHuvijtaVEXvucSHejiW0c1">
+-      <div class="form-group">
+-        <label class="name">名字:  </label>
+-        <input name="name" type="text" class="form-name" id="js-name" placeholder="不超过20个字">
+-        
+-      </div>
+-      <div class="form-group">
+-        <label class="comment">评论:</label>
+-        <textarea name="content" class="form-control" id="js-content" rows="5" placeholder="不超过300个字"></textarea>
+-        
+-      </div>
+-        <input name="blog" type="hidden" id="js-name" value="4">
+-        <p class="error company-tips" id="jsCompanyTips"></p>
+-
+-        <button class="btn" type="button" id="jsStayBtn" value="发表">发表</button>
+-    </form>
+-
+-    <div class="#">
+-    <h3 class="comment-list-title">共 <span>0</span> 条评论</h3>
+-    <ul class="comment-list">
+-        
+-            暂无评论
+-        
+-    </ul>
+-    </div>
+-
+-</div>
+-
+-
+-            </div>
+-        </main>
+-
+-        <footer id="footer" class="footer">
+-            <div class="footer-inner">
+-                <div class="copyright">
+-                     ©  2017 -
+-                    <span itemprop="copyrightYear">2018</span>
+-                    <span class="with-love">
+-                        <i class="fa fa-heart"></i>
+-                    </span>
+-                    <span class="author" itemprop="copyrightHolder">geerniya</span>
+-                </div>
+-                <div class="powered-by">
+-                    豫ICP备18002345号-1
+-                </div>
+-                <div class="theme-info">
+-                    Supported by <a href="https://www.aliyun.com/">阿里云</a>
+-                </div>
+-            </div>
+-        </footer>
+-
+-        <div class="back-to-top back-to-top-on">
+-          <i class="fa fa-arrow-up"></i>
+-        </div>
+-    </div>
+-
+-
+-    <script type="text/javascript">
+-      if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+-        window.Promise = null;
+-      }
+-    </script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/index.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/fastclick.min.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/jquery.lazyload.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/velocity.min.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/velocity.ui.min.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/jquery.fancybox.pack.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/utils.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/motion.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/affix.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/pisces.js.下载"></script>
+-    <script type="text/javascript" src="./尝试一个很短的博客_files/bootstrap.js.下载"></script>
+-    <script>
+-      var cloudTieConfig = {
+-        url: document.location.href,
+-        sourceId: "",
+-        productKey: "35099139b61244da8d227be2d3dedbbd",
+-        target: "cloud-tie-wrapper"
+-      };
+-    </script>
+-    <script>
+-    (function(){
+-        var bp = document.createElement('script');
+-        var curProtocol = window.location.protocol.split(':')[0];
+-        if (curProtocol === 'https') {
+-            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+-        }
+-        else {
+-            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+-        }
+-        var s = document.getElementsByTagName("script")[0];
+-        s.parentNode.insertBefore(bp, s);
+-    })();
+-    </script>
+-
+-    
+-<script>
+-    $(function(){
+-        $('#jsStayBtn').on('click', function(){
+-
+-            $.ajax({
+-                cache: false,
+-                type: "POST",
+-                url:"/add_comment/",
+-                data:$('#jsStayForm').serialize(),
+-                dateType:"json",
+-                async: true,
+-                beforeSend:function(xhr, settings){
+-                xhr.setRequestHeader("X-CSRFToken", "kn3mVEJwKPjjtcrVxtGgjaAmcyH5LlSRzzmCMRHgQqHuvijtaVEXvucSHejiW0c1");
+-            },
+-                success: function(data) {
+-                    if(data.status == 'success'){
+-                        alert("提交成功");
+-                         window.location.reload();//刷新当前页面.
+-                    }else if(data.status == 'fail'){
+-
+-                        alert("评论错误，请重新评论");
+-                    }
+-                },
+-            });
+-        });
+-    })
+-
+-</script>
+-
+-
+-
+-
+-</body></html>
+\ No newline at end of file
++{% endblock %}
+diff --git a/blog/myblog/templates/index.html b/blog/myblog/templates/index.html
+index 7d52afe..7031256 100755
+--- a/blog/myblog/templates/index.html
++++ b/blog/myblog/templates/index.html
+@@ -2,10 +2,19 @@
+ 
+ <!--博客标题-->
+ {% block title %}
+-觅欣的部落
++温文尔雅阁
+ {% endblock %}
+ 
+-{% block name %}觅欣的部落{% endblock %}
++{% block name %}温文尔雅阁{% endblock %}
++
++{% block blogcount %}
++    <div class="site-state-item site-state-posts">
++        <a href="http://www.liaoxin.online:5001/myblog/archive/">
++            <span class="site-state-item-count">{{blog_nums}}</span>
++            <span class="site-state-item-name">日志</span>
++        </a>
++    </div>
++{% endblock %}
+ 
+ <!--博客标题-->
+ {% block content %}
+@@ -17,7 +26,7 @@
+ 
+                         <header class="post-header">
+                             <h1 class="post-title" itemprop="name headline">
+-                                <a class="post-title-link" href="http://127.0.0.1/blog/4/" itemprop="url">
++                                <a class="post-title-link" href="{% url 'blog_id' each_blog.id %}" itemprop="url">
+                                     {{each_blog.title}}
+                                 </a>
+                             </h1>
+@@ -47,7 +56,7 @@
+                                     <span class="post-meta-item-text">分类于</span>
+ 
+                                     <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+-                                        <a href="http://127.0.0.1/category/%E7%94%9F%E6%B4%BB/" itemprop="url" rel="index">
++                                        <a href="http://www.liaoxin.online:8001/category/%E7%94%9F%E6%B4%BB/" itemprop="url" rel="index">
+                                             <span itemprop="name">
+                                                 {{each_blog.category.name}}
+                                             </span>
+@@ -66,7 +75,7 @@
+                             <p>{{each_blog.content}}</p>
+                             <!--noindex-->
+                             <div class="post-button text-center">
+-                                <a class="btn" href="http://127.0.0.1/blog/4/" rel="contents">
++                                <a class="btn" href="http://www.liaoxin.online:8001/myblog/4/" rel="contents">
+                                 阅读全文 »
+                                 </a>
+                             </div>
+diff --git a/blog/myblog/urls.py b/blog/myblog/urls.py
+index aa529f4..82d8fee 100644
+--- a/blog/myblog/urls.py
++++ b/blog/myblog/urls.py
+@@ -1,7 +1,9 @@
+-from django.urls import path
++from django.urls import path, re_path
+ 
+-from myblog.views import IndexView
++from myblog.views import IndexView, ArchiveView, BlogDetailView
+ 
+ urlpatterns = [
+     path('', IndexView.as_view(), name='index'),
++    path('archive/', ArchiveView.as_view(), name='archive'),
++    re_path(r'blog/(?P<blog_id>\d+)$', BlogDetailView.as_view(), name='blog_id'),
+ ]
+\ No newline at end of file
+diff --git a/blog/myblog/views.py b/blog/myblog/views.py
+index 81786f4..15beaea 100755
+--- a/blog/myblog/views.py
++++ b/blog/myblog/views.py
+@@ -1,7 +1,7 @@
+ from pure_pagination import PageNotAnInteger, Paginator
+ from django.shortcuts import render
+ from django.views import View
+-from myblog.models import Blog
++from myblog.models import Blog, Counts
+ # Create your views here.
+ 
+ class IndexView(View):
+@@ -11,6 +11,13 @@ class IndexView(View):
+     def get(self, request):
+         all_blog = Blog.objects.all().order_by('-id')
+ 
++        # 博客、标签、分类数目统计
++        count_nums = Counts.objects.get()
++        blog_nums = count_nums.blog_nums
++        cate_nums = count_nums.category_nums
++        tag_nums = count_nums.tag_nums
++
++
+         try:
+             page = request.GET.get('page', 1)
+         except PageNotAnInteger:
+@@ -20,5 +27,52 @@ class IndexView(View):
+ 
+         all_page_blog = p.page(page)
+ 
+-        return render(request, 'index.html', {"blog": all_page_blog})
++        return render(request, 'index.html', {
++            "blog":all_page_blog,
++            "blog_nums":blog_nums,
++        
++        })
++
++class ArchiveView(View):
++    """
++    归档
++    """
++    def get(self, request):
++        #按照时间归档
++        Archive = Blog.objects.all().order_by("-create_time")
++
++        # 博客、标签、分类数目统计
++        count_nums = Counts.objects.get()
++        blog_nums = count_nums.blog_nums
++        cate_nums = count_nums.category_nums
++        tag_nums = count_nums.tag_nums
++
++        try:
++            page = request.GET.get('page', 1)
++        except PageNotAnInteger:
++            page=1
++        
++        p = Paginator(Archive, 5, request=request)
++        all_page_archive = p.page(page)
++
++        return render(request, "archive.html", {
++            "all_archive":all_page_archive,
++            "blog_nums" : blog_nums
++        })
++
++class BlogDetailView(View):
++    """
++    博客详情页
++    """
++    def get(self, request, blog_id):
++        blog = Blog.objects.get(id=blog_id)
++        return render(request, 'blog-detail.html', {
++            'blog': blog,
++        })
++
++
++def page_not_found(request):
++    return render(request, '404.html')
+ 
++def page_errors(request):
++    return render(request, '500.html')
+\ No newline at end of file

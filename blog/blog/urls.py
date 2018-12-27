@@ -20,3 +20,6 @@ urlpatterns = [
     path('myblog/', include('myblog.urls')),
     path('admin/', admin.site.urls),
 ]
+
+#hander404 = 'myblog.views.page_not_found'
+#hander505 = 'myblog.views.page_errors'
