@@ -418,9 +418,56 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 ![](https://github.com/Symbii/MY_Blog_Django/blob/master/my_page.png)
 
+
+##  实现博客阅读全文的功能
+
+ > 可以看到模版文件	``index.html``,阅读全文是一个链接，我们必须通过正确的url将其指向正确的视图函数。
+ 	首先这个url不再是一个具体的，它必然是一个系列，并且利用django的router特性:topython, tourl.
+ 	
+ 	django中匹配正则表达式：(?P<blog_id>\d+)$ 
+ 
+> 在django中url里面正则表达式按照上诉格式写，它代表的含义是 用\d+去赋值给blog_id，
+> 所以urls里面的实现，我们的阅读全文的urlpatterns链接，应为：
+
+	re_path(r"blog/(?P<blog_id>\d+)$", blogdetail.as_view(), name="blogid")	
+ > view里面的实现，通过urls的router topython，blog_id这个可以获取到blogid，视图函数必须使用blog_id这个座位参数，才能获取到。
+
+		class BlogDetailView(View):
+	    """
+	    博客详情页
+	    """
+	    def get(self, request, blog_id):
+	        blog = Blog.objects.get(id=blog_id)
+	        return render(request, 'blog-detail.html', {
+	            'blog': blog,
+	        })
+ 
+ >这样子我们就可以在blog—detail页面中显示blog的详细内容
+ 
+ > 模版index.html实现，我们的页面最开始是在index中的内容，这样子我们在index页面上要访问到blog详情页面就必须想办法根据正确的url跳转到对应blog的正确页面。我们根据数据库blog表添加时候的id进行传值，然后在上面的视图函数中获取到对应的一篇博客内容。```blogid```这个在这里时候就体现出来tourl的特性，他就是之前那个url的别名，可供模版中使用。
+	 
+	<div class="post-button text-center">
+		<a class="btn" href="{% url 'blogid' each_blog.id %}" rel="contents">
+		阅读全文 »
+		</a>
+	</div>
+
+> 这里最开始视图函数并不是 使用django orm这类进行数据库操作，因为不熟悉，直接使用的是如下方法：
+
+	import django.db import connection
+	cursor = connection.cursor()
+	sql_cmd = "select * from Blog where id=" + blog_id + ";"
+	cursor.execute(sql_cmd)
+	blog_row = cursor.fetchone() or cursor.fetchall()
+
+这样子获取到的是一个元组，可以print（）看下具体内容，blog_row[:] 每一个对应数据库中一个column
+
+
 ## 本项目GitHub地址:
 
 1. 项目github地址：请访问[我的GitHub地址](https://github.com/Symbii)
+
+
 
 
 ## 遇到的坑
