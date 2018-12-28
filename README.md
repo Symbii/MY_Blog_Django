@@ -472,6 +472,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 ## 遇到的坑
 
+### mysqlclient bug
 > 由于mac上mysqlclient安装时候遇到如下mysql的bug，所以为了避免后续还遇到乱七八糟的环境问题，把开发环境挪到阿里云。该bug具体可以参考：[mysql官方accept bug](https://bugs.mysql.com/bug.php?id=86971) 和 [stack overflow关于mysqlclient bug](https://stackoverflow.com/questions/43740481/python-setup-py-egg-info-mysqlclient)
 	
 	Description:
@@ -500,6 +501,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	1. Install MySQL Connector/C 6.1.10
 	2. run mysql_config
 
+### vncserver配置问题
 > 由于把开发环境挪到阿里云了，在没有修改allow_host情况下，只有本机才能通过浏览器访问，所以必须配置一个vncserver方便我通过服务器桌面访问浏览器进行调试。通过yum groupinstall 好了gnome-desktop, vncserver, 发现通过vncview访问时候能连上，但是无法显示画面,黑屏。最后通过如下方式解决，具体也不知道到底哪些是必须步骤，但是最后一步vim /lib/systemd/system vncserver@.service之后就好了：
 
 	1. yum groupinstall Xfce
@@ -523,6 +525,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 			VNCSERVERARGS[1]="-geometry 800x600"
 
 
+### 服务器遭受攻击
 >  服务器招受到url注入攻击最后采取封禁了所有陌生的接入ip,以及下面这个下载地址的ip,同时更换了端口
 
 	[23/Dec/2018 22:21:29] "GET /public/index.php?s=/Index/%09hink%07pp/
@@ -533,6 +536,30 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	iptables -I INPUT -s X.X.X.X -j DROP
 
 
+### 换成私网ip之后本机无法访问数据库，只有127可以访问，mysql的user表设置问题
+
 >  setting.py中把databse default的host改为服务器小网ip，导致mysql连接不上，最后定位为填小网ip时候，登陆的时候，登陆名为用户名@“host主机名字”，但是由于这个’用户名@host主机名字‘并没有设置mysql密码，但是django的配置中填写了密码，导致登陆不了，最终修改mysql的user表之后，登陆ok
 
 	GRANT ALL PRIVILEGES ON *.* TO '用户名字'@'host主机名字' IDENTIFIED BY '用户密码';
+
+### 数据库导出到不同名字的数据库
+
+>将开发环境和生产环境分离，想着数据库直接用之前的，采用mysqldump命令 复制对应database,然后到开发环境的数据库中source对应的数据。
+
+	mysqldump -uroot -pxxxxx 数据库名 > xxx.sql  
+
+> 这样子不仅复制了表的结构，还复制其中数据， 如果只想要表的结构
+
+	 mysqldump -uroot -pxxxx -d 数据库名 > xxx.sql
+
+> 进入开发环境mysql
+	
+	source xxx.sql;
+
+>或者执行下面的命令
+
+	mysql 　-uroot -pxxxxx 数据库名 < xxx.sql
+
+
+这里注意source之后得到的数据库名字和之前是完全一样的，如果你想要不一样的，你需要手动修改xxx.sql中的语句。总之xxx.sql中都是sql语句，如果有问题，可以打开看，看看是不是生成的不对。	
+	
