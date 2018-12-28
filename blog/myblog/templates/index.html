@@ -75,7 +75,7 @@
                             <p>{{each_blog.content}}</p>
                             <!--noindex-->
                             <div class="post-button text-center">
-                                <a class="btn" href="http://www.liaoxin.online:8001/myblog/4/" rel="contents">
+                                <a class="btn" href="{% url 'blog_id' each_blog.id %}" rel="contents">
                                 阅读全文 »
                                 </a>
                             </div>
