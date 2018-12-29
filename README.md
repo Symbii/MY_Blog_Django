@@ -452,7 +452,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 		</a>
 	</div>
 
-> 这里最开始视图函数并不是 使用django orm这类进行数据库操作，因为不熟悉，直接使用的是如下方法：
+> 这里最开始视图函数并不是 使用django orm这类进行数据库操作，直接使用的是执行sql语句：
 
 	import django.db import connection
 	cursor = connection.cursor()
@@ -461,6 +461,114 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	blog_row = cursor.fetchone() or cursor.fetchall()
 
 这样子获取到的是一个元组，可以print（）看下具体内容，blog_row[:] 每一个对应数据库中一个column
+
+
+## 实现归档功能
+
+> 归档功能主要是显示：目前整个blog中一共有多少篇文章，每年有多少篇文章，每篇文章的发表时间和标题。
+
+> 新增加blog统计数据表，记录博客的文章总数，标签总数，分类等等。models.py修改：
+
+	class Counts(models.Model):
+    """
+    统计博客、分类和标签的数目
+    """
+    blog_nums = models.IntegerField(verbose_name='博客数目', default=0)
+    category_nums = models.IntegerField(verbose_name='分类数目', default=0)
+    tag_nums = models.IntegerField(verbose_name='标签数目', default=0)
+    visit_nums = models.IntegerField(verbose_name='网站访问量', default=0)
+    
+    class Meta:
+        verbose_name = '数目统计'
+        verbose_name_plural = verbose_name
+     
+		 def __str__(self):
+		     return "文章数目:{0}, 类别数目:{1}，标签数目:{2}， 点击量:{3}".format(self.blog_nums, 
+		     self.category_nums, self.tag_nums, self.visit_nums)
+    
+> admin.py中我们给blogadmin新增加，2个方法：save_model 和 delete_model方法在blog增加、删除时候更新Counts表。
+
+	def save_model(self, request, obj, form, change):
+        obj.save()
+        #统计博客数目
+        blog_nums = Blog.objects.count()
+        try:
+            count_nums = Counts.objects.get()
+            count_nums.blog_nums = blog_nums
+        except Counts.DoesNotExist:
+            count_nums = Counts()
+            count_nums.blog_nums = blog_nums
+        finally:
+	         count_nums.save()
+	
+	def delete_model(self, request, obj):
+	    # 统计博客数目
+	    blog_nums = Blog.objects.count()
+	    count_nums = Counts.objects.get()
+	    count_nums.blog_nums = blog_nums - 1
+	    count_nums.save()
+	    obj.delete()
+
+> 在视图方法中添加：
+
+	class ArchiveView(View):
+    """
+    归档
+    """
+    def get(self, request):
+        #按照时间归档
+        Archive = Blog.objects.all().order_by("-create_time")
+
+        # 博客、标签、分类数目统计
+        count_nums = Counts.objects.get()
+        blog_nums = count_nums.blog_nums
+        cate_nums = count_nums.category_nums
+        tag_nums = count_nums.tag_nums
+
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page=1
+        
+        p = Paginator(Archive, 5, request=request)
+        all_page_archive = p.page(page)
+
+        return render(request, "archive.html", {
+            "all_archive":all_page_archive,
+            "blog_nums" : blog_nums
+        })
+
+> 在模版archive中添加，这里使用regroup 根据年份进行归档：
+	
+	{% regroup all_archive.object_list by create_time.year as dates_by_year %}
+	
+	{% for year in dates_by_year %}
+	<div class="collection-title">
+	<h2 class="archive-year motion-element" id="archive-year-2018" 
+	style="opacity: 1; display: block; transform: translateX(0px);">{{ year.grouper }}</h2>
+	</div>
+	{% for blog in year.list %}
+	<article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" 
+	style="opacity: 1; display: block; transform: translateY(0px);">
+	<header class="post-header">
+	
+	<h1 class="post-title">
+	<a class="post-title-link" href="{% url 'blog_id' blog.id %}" itemprop="url">
+	    <span itemprop="name">{{ blog.title }}</span>
+	</a>
+	</h1>
+	
+	<div class="post-meta">
+	<time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" 
+	content="2017-09-01">
+	{{ blog.create_time|date:"m-d" }}
+	</time>
+	</div>
+	
+	</header>
+	</article>
+	{% endfor %}
+	{% endfor %}
 
 
 ## 本项目GitHub地址:
