@@ -2,6 +2,8 @@ from pure_pagination import PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.views import View
 from myblog.models import Blog, Counts
+import markdown
+
 # Create your views here.
 
 class IndexView(View):
@@ -11,12 +13,15 @@ class IndexView(View):
     def get(self, request):
         all_blog = Blog.objects.all().order_by('-id')
 
+        #all_blog加markdown样式
+        for blog in all_blog:
+            blog.content = markdown.markdown(blog.content)
+            
         # 博客、标签、分类数目统计
         count_nums = Counts.objects.get()
         blog_nums = count_nums.blog_nums
         cate_nums = count_nums.category_nums
         tag_nums = count_nums.tag_nums
-
 
         try:
             page = request.GET.get('page', 1)
@@ -24,13 +29,11 @@ class IndexView(View):
             page = 1
     
         p = Paginator(all_blog, 1, request=request)
-
         all_page_blog = p.page(page)
 
         return render(request, 'index.html', {
             "blog":all_page_blog,
             "blog_nums":blog_nums,
-        
         })
 
 class ArchiveView(View):
@@ -66,10 +69,10 @@ class BlogDetailView(View):
     """
     def get(self, request, blog_id):
         blog = Blog.objects.get(id=blog_id)
+        blog.content = markdown.markdown(blog.content)
         return render(request, 'blog-detail.html', {
             'blog': blog,
         })
-
 
 def page_not_found(request):
     return render(request, '404.html')
