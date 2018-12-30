@@ -46,15 +46,17 @@
                 {% for blog in tag_blogs.object_list %}
                     <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
                         <header class="post-header">
-                            <div class="post-meta">  
+
+                            <h1 class="post-title">
+                                <a class="post-title-link" href="{% url 'blog_id' blog.id %}" itemprop="url">
+                                    <span style="padding-left:20px;" itemprop="name">{{ blog.title }}</span>
+                                </a>
+                            </h1>
+
+                            <div class="post-meta">
                                 <time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" content="2017-09-01">
-                                {{ blog.create_time}}
+                                {{ blog.create_time|date:"y-m-d" }}
                                 </time>
-                                <h1 class="post-title">
-                                    <a class="post-title-link" href="{% url 'blog_id' blog.id %}" itemprop="url">
-                                        <span itemprop="name">{{ blog.title }}</span>
-                                    </a>
-                                </h1> 
                             </div>
 
                         </header>
