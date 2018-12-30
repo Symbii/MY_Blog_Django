@@ -153,7 +153,24 @@ class TagDetailView(View):
     博客标签下所包含的博客文章
     """
     def get(self, request, tag_name):
-        return HttpResponse("功能没想好做成什么样，待想一想，看看同类产品")
+        tag = Tag.objects.filter(name=tag_name).first()
+        tag_blogs = tag.blog_set.all()
+        tag_blog_nums = tag.blog_set.count()
+
+        # 分页
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+
+        p = Paginator(tag_blogs, 5, request=request)
+        tag_blogs = p.page(page)
+        return render(request, 'tag-detail.html', {
+            'tag_blogs': tag_blogs,
+            'tag_name': tag_name,
+            'tag_blog_nums': tag_blog_nums,
+        })
+
 
 def page_not_found(request):
     return render(request, '404.html')
