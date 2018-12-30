@@ -16,6 +16,21 @@
     </div>
 {% endblock %}
 
+{% block category_count %}
+<div class="site-state-item site-state-categories">
+    <span class="site-state-item-count">{{cate_nums}}</span>
+    <span class="site-state-item-name">分类</span>
+</div>
+{% endblock %}
+
+{% block tag_count %}
+<div class="site-state-item site-state-tags">
+    <a href="http://www.liaoxin.online:5001/myblog/tags/">
+        <span class="site-state-item-count">{{tag_nums}}</span>
+        <span class="site-state-item-name">标签</span>
+    </a>
+</div>
+{% endblock %}
 
 <!--博客标题-->
 {% block content %}

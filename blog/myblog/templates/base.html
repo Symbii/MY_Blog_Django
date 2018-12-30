@@ -165,18 +165,21 @@
                                     </a>
                                 </div>
                                 {% endblock %}
+
+                                {% block category_count %}
                                 <div class="site-state-item site-state-categories">
-                                    <span class="site-state-item-count">3</span>
+                                    <span class="site-state-item-count">category_count</span>
                                     <span class="site-state-item-name">分类</span>
                                 </div>
-
+                                {% endblock %}
+                                {% block tag_count %}
                                 <div class="site-state-item site-state-tags">
                                     <a href="http://www.liaoxin.online:5001/myblog/tags/">
                                         <span class="site-state-item-count">8</span>
                                         <span class="site-state-item-name">标签</span>
                                     </a>
                                 </div>
-
+                                {% endblock %}
                             </nav>
 
                             <div class="feed-link motion-element">
