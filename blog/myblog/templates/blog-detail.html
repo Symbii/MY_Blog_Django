@@ -13,16 +13,71 @@
     </div>
 {% endblock %}
 
+{% block category_count %}
+<div class="site-state-item site-state-categories">
+    <span class="site-state-item-count">{{cate_nums}}</span>
+    <span class="site-state-item-name">分类</span>
+</div>
+{% endblock %}
+
+{% block tag_count %}
+<div class="site-state-item site-state-tags">
+    <a href="http://www.liaoxin.online:5001/myblog/tags/">
+        <span class="site-state-item-count">{{tag_nums}}</span>
+        <span class="site-state-item-name">标签</span>
+    </a>
+</div>
+{% endblock %}
+
 {% block content %}
 <div class="content-wrap">
     <div id="content" class="content">
         <div id="posts" class="posts-expand">
             <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
-
                 <header class="post-header">
-
                     <h1 class="post-title" itemprop="name headline">{{ blog.title }}</h1>
-
+                    <div class="post-meta">
+                        <span class="post-time">
+                            <span class="post-meta-item-icon">
+                                <i class="fa fa-calendar-o"></i>
+                            </span>
+                            <span class="post-meta-item-text">发表于</span>
+                            <time title="Post created" itemprop="dateCreated datePublished" datetime="#">
+                                {{blog.create_time}}
+                            </time>
+                        </span>
+                        <span class="post-category">
+                            <span class="post-meta-divider">|</span>
+                            <span class="post-meta-item-icon">
+                                <i class="fa fa-folder-o"></i>
+                            </span>
+                            <span class="post-meta-item-text">分类于</span>
+                            <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                                <a href="http://www.liaoxin.online:5001/category/" itemprop="url" rel="index">
+                                    <span itemprop="name">
+                                        {{blog.category.name}}
+                                    </span>
+                                </a>
+                            </span>
+                        </span>
+                        <span class="post-tags">
+                            <span class="post-meta-divider">|</span>
+                            <span class="post-meta-item-icon">
+                                <i class="fa fa-folder-o"></i>
+                            </span>
+                            <span class="post-meta-item-text">标签:</span>
+                            <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                                {% for tagname in tag_names  %}
+                                <a href="{% url 'tag_name' tagname %}" itemprop="url" rel="index">
+                                    <span itemprop="name">
+                                        {{tagname}}
+                                    </span>
+                                </a>
+                                {% endfor %}
+                            </span>
+                        </span>
+                    </div>                   
+                    <!--
                     <div class="post-meta">
                         <span class="post-comments-count">
                             <span class="post-meta-divider">|</span>
@@ -34,40 +89,43 @@
                             </a>
                         </span>
                     </div>
+                    -->
                 </header>
-
                 <div class="post-body" itemprop="articleBody">
-
                     {{ blog.content|safe }}
-
                 </div>
-
-
+                
+                <!--
                 <div>
                     <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
-                    <div>觉得不错，支持一下！</div>
-                    <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById(&#39;QR&#39;); if (qr.style.display === &#39;none&#39;) {qr.style.display=&#39;block&#39;;} else {qr.style.display=&#39;none&#39;}">
-                    <span>赏</span>
-                    </button>
+                        <div>觉得不错，支持一下！</div>
+                        <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById(&#39;QR&#39;); if (qr.style.display === &#39;none&#39;) {qr.style.display=&#39;block&#39;;} else {qr.style.display=&#39;none&#39;}">
+                        <span>赏</span>
+                        </button>
+                        
+                        <div id="QR" style="display: none;">
 
-                    <!--
-                    <div id="QR" style="display: none;">
-
-                        <div id="wechat" style="display: inline-block">
-                        <a href="/static/image/weixin.jpg" class="fancybox" rel="group"><img id="wechat_qr" src="/static/image/weixin.jpg" alt="symbii WeChat Pay"></a>
-                        <p>微信打赏</p>
+                            <div id="wechat" style="display: inline-block">
+                            <a href="/static/image/weixin.jpg" class="fancybox" rel="group"><img id="wechat_qr" src="/static/image/weixin.jpg" alt="symbii WeChat Pay"></a>
+                            <p>微信打赏</p>
+                            </div>
+                            <div id="alipay" style="display: inline-block">
+                            <a href="/static/image/zhifubao.jpg" class="fancybox" rel="group"><img id="alipay_qr" src="/static/image/zhifubao.jpg" alt="symbii Alipay"></a>
+                            <p>支付宝打赏</p>
+                            </div>
                         </div>
-                        <div id="alipay" style="display: inline-block">
-                        <a href="/static/image/zhifubao.jpg" class="fancybox" rel="group"><img id="alipay_qr" src="/static/image/zhifubao.jpg" alt="symbii Alipay"></a>
-                        <p>支付宝打赏</p>
-                        </div>
-                    
                     </div>
-                    -->
                 </div>
-                </div>
+                -->
 
                 <footer class="post-footer">
+                <!--
+                    <div class="post-tags">
+                        {% for blog_tag in blog.tag.all %}
+                            <a href="{% url 'tag_name' blog_tag.name %}" rel="tag">{{ blog_tag.name }}</a>
+                        {% endfor %}
+                    </div>
+                -->
                     <div class="post-nav">
                         <div class="post-nav-next post-nav-item">
                             {% if has_prev %}
@@ -90,7 +148,6 @@
 
                         </div>
                     </div>
-
                 </footer>
 
             </article>

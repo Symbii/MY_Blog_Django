@@ -152,7 +152,7 @@
                     <div class="sidebar-inner">
                         <section class="site-overview sidebar-panel sidebar-panel-active">
                             <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-                                <img class="site-author-image" itemprop="image" src="/static/image/Black_Zombie.jpeg" alt="Black_Zombie">
+                                <img class="site-author-image" itemprop="image" src="/static/image/skyjump.jpeg" alt="my_skyjump">
                                 <p class="site-author-name" itemprop="name">温文尔雅</p>
                                 <p class="site-description motion-element" itemprop="description">仰天长啸仗剑红尘，冬去春来寒暑几</p>
                             </div>
@@ -160,23 +160,26 @@
                                 {% block blogcount %}
                                 <div class="site-state-item site-state-posts">
                                     <a href="http://www.liaoxin.online:5001/myblog/archive/">
-                                        <span class="site-state-item-count">15</span>
+                                        <span class="site-state-item-count">blogcount</span>
                                         <span class="site-state-item-name">日志</span>
                                     </a>
                                 </div>
                                 {% endblock %}
+
+                                {% block category_count %}
                                 <div class="site-state-item site-state-categories">
-                                    <span class="site-state-item-count">3</span>
+                                    <span class="site-state-item-count">category_count</span>
                                     <span class="site-state-item-name">分类</span>
                                 </div>
-
+                                {% endblock %}
+                                {% block tag_count %}
                                 <div class="site-state-item site-state-tags">
                                     <a href="http://www.liaoxin.online:5001/myblog/tags/">
                                         <span class="site-state-item-count">8</span>
                                         <span class="site-state-item-name">标签</span>
                                     </a>
                                 </div>
-
+                                {% endblock %}
                             </nav>
 
                             <div class="feed-link motion-element">

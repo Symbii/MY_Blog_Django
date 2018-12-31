@@ -15,37 +15,59 @@ class BlogAdmin(admin.ModelAdmin):
         except Counts.DoesNotExist:
             count_nums = Counts()
             count_nums.blog_nums = blog_nums
-        finally:
-            count_nums.save()
+
         #博客分类数目统计
-        #obj_category = obj.category
-        #category_number = obj_category.blog_set.count()
-        #obj_category.number = category_number
-        #obj_category.save()
+        obj_category = obj.category
+        category_number = obj_category.blog_set.count()
+        obj_category.number = category_number
+        obj_category.save()
+        
+        #counts表刷新，分类数据
+        category_nums = Category.objects.count()
+        count_nums.category_nums = category_nums
+
         #博客标签数目统计
-        #obj_tag_list = obj.tag.all()
-        #for obj_tag in obj_tag_list:
-        #    tag_number = obj_tag.blog_set.count()
-        #    obj_tag.number = tag_number
-        #    obj_tag.save()
+        obj_tag_list = obj.tag.all()
+        for obj_tag in obj_tag_list:
+            #多对多关系，反向查询
+            tag_number = obj_tag.blog_set.count()
+            obj_tag.number = tag_number
+            obj_tag.save()
+        
+        #counts表刷新，标签数据
+        tag_nums = Tag.objects.count()
+        count_nums.tag_nums = tag_nums
+
+        count_nums.save()
 
     def delete_model(self, request, obj):
         # 统计博客数目
         blog_nums = Blog.objects.count()
         count_nums = Counts.objects.get()
         count_nums.blog_nums = blog_nums - 1
-        count_nums.save()
+        
         # 博客分类数目统计
-        #obj_category = obj.category
-        #category_number = obj_category.blog_set.count()
-        #obj_category.number = category_number - 1
-        #obj_category.save()
+        obj_category = obj.category
+        category_number = obj_category.blog_set.count()
+        obj_category.number = category_number - 1
+        obj_category.save()
+        
+        #counts表刷新，分类数据
+        category_nums = Category.objects.count()
+        count_nums.category_nums = category_nums
+
         # 博客标签数目统计
-        #obj_tag_list = obj.tag.all()
-        #for obj_tag in obj_tag_list:
-        #    tag_number = obj_tag.blog_set.count()
-        #    obj_tag.number = tag_number - 1
-        #    obj_tag.save()
+        obj_tag_list = obj.tag.all()
+        for obj_tag in obj_tag_list:
+            tag_number = obj_tag.blog_set.count()
+            obj_tag.number = tag_number - 1
+            obj_tag.save()
+
+        #counts表刷新，标签数据
+        tag_nums = Tag.objects.count()
+        count_nums.tag_nums = tag_nums
+
+        count_nums.save()
         obj.delete()
 
 class CountsAdmin(admin.ModelAdmin):
