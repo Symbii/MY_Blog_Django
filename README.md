@@ -127,7 +127,7 @@
 
 这个时候会发现myblog 数据库中多了很多内容：
 
-![navicat](https://github.com/Symbii/MY_Blog_Django/blob/master/mysql.png)
+![navicat](https://github.com/Symbii/MY_Blog_Django/blob/master/mysql.png?raw=true)
 
 ## 个人主页数据库设计
 
@@ -333,7 +333,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 现在我们就有了样式，同时根据数据库内容，进行显示的首页：
 
-![home](https://github.com/Symbii/MY_Blog_Django/blob/master/home.png)
+![home](https://github.com/Symbii/MY_Blog_Django/blob/master/home.png?raw=true)
 
 
 ## 利用模版的继承
@@ -416,7 +416,7 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 分页效果如下图所示：
 
-![](https://github.com/Symbii/MY_Blog_Django/blob/master/my_page.png)
+![](https://github.com/Symbii/MY_Blog_Django/blob/master/my_page.png?raw=true)
 
 
 ##  实现博客阅读全文的功能
@@ -442,7 +442,21 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	            'blog': blog,
 	        })
  
- >这样子我们就可以在blog—detail页面中显示blog的详细内容
+>这样子我们就可以在blog—detail页面中显示blog的详细内容，为了获取到blog下的全部标签内容：
+	
+	from django.db import connection
+	 
+	cursor = connection.cursor()
+	#获取标签名字，采用sql语句获取 ，也可以直接blog.tag.all
+	sql_cmd = "select tag_id from myblog_blog_tag where blog_id = {0};".format(blog_id)
+	cursor.execute(sql_cmd)
+	#注意row_tag_id是多维元组
+	row_tag_id = cursor.fetchall()
+	for row_each_tag in row_tag_id: 
+	    sql_cmd = "select name from myblog_tag where id = {0};".format(row_each_tag[0])
+	    cursor.execute(sql_cmd)
+	    row_each_name = cursor.fetchone()
+	    tag_names.append(row_each_name[0])
  
  > 模版index.html实现，我们的页面最开始是在index中的内容，这样子我们在index页面上要访问到blog详情页面就必须想办法根据正确的url跳转到对应blog的正确页面。我们根据数据库blog表添加时候的id进行传值，然后在上面的视图函数中获取到对应的一篇博客内容。```blogid```这个在这里时候就体现出来tourl的特性，他就是之前那个url的别名，可供模版中使用。
 	 
@@ -570,6 +584,138 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 	{% endfor %}
 	{% endfor %}
 
+## 博客支持markdown显示
+
+> 安装markdown包
+
+	pip install markdown
+
+> 对博客content数据进行markdown渲染
+
+views.py:
+
+    #all_blog加markdown样式
+    for blog in all_blog:
+        blog.content = markdown.markdown(blog.content)
+
+## 标签云实现
+
+> 数据来源tag表，tag与blog是多对多的关系，需要反向查询每个tag 在blog中的次数，统计出每个tag的总的数量。同时根据tag表刷新counts表。
+
+
+admin.py，blogAdmin，save_model方法:
+
+	 #博客标签数目统计
+    obj_tag_list = obj.tag.all()
+    for obj_tag in obj_tag_list:
+        #多对多关系，反向查询
+        tag_number = obj_tag.blog_set.count()
+        obj_tag.number = tag_number
+        obj_tag.save()
+    
+    #counts表刷新，标签数据
+    tag_nums = Tag.objects.count()
+    count_nums.tag_nums = tag_nums
+	
+> 剩下的就是通过view函数将对应数据库中的内容传递给模版
+
+	class TagView(View):
+    """
+    博客标签综述
+    """
+    def get(self, request):
+        all_tags = Tag.objects.all()
+
+        # 博客、标签、分类数目统计
+        count_nums = Counts.objects.get()
+        blog_nums = count_nums.blog_nums
+        cate_nums = count_nums.category_nums
+        tag_nums = count_nums.tag_nums
+
+        return render(request, 'tags.html', {
+            'tags': all_tags,
+            'tag_nums': tag_nums,
+            'blog_nums': blog_nums,
+            "cate_nums" : cate_nums,    
+        })
+
+> urls对应path('tags/', TagView.as_view(), name='tags'),
+
+> 模版文件tags.html,增加按照对应tag次数统计进行不同style显示
+
+    {% for tag in tags %}
+         <a href="{% url 'tag_name' tag.name %}"
+           {% if tag.number <= 2 %}
+                style="font-size: 12.5px; color: #999"
+           {% elif tag.number <= 5 %}
+                style="font-size: 15px; color: #666"
+           {% elif tag.number <= 10 %}
+                style="font-size: 20px; color: #444"
+           {% elif tag.number <= 20 %}
+                style="font-size: 25px; color: #222"
+           {% elif tag.number <= 50 %}
+                style="font-size: 30px; color: #111"
+           {% else %}
+                style="font-size: 35px; color: #000"
+           {% endif %}>
+	
+           {{ tag.name }}
+        </a>
+    {% endfor %}
+
+## 按照标签分类所有博文
+
+> 页面url和之前blog-detail一样
+
+	re_path(r"tags/(?P<tag_name>\w+)$", TagDetailView.as_view(), name= "tag_name")
+
+> 在所有页面中，有关tag的href添加类似：
+
+	href="{% url 'tag_name' tag.name %}"
+
+> TagDetailView类实现：
+
+添加根据tag_name 获取所有blog：
+
+	    def get(self, request, tag_name):
+        tag = Tag.objects.filter(name=tag_name).first()
+        tag_blogs = tag.blog_set.all()
+        tag_blog_nums = tag.blog_set.count()
+
+        # 分页
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+
+        p = Paginator(tag_blogs, 5, request=request)
+        tag_blogs = p.page(page)
+        return render(request, 'tag-detail.html', {
+            'tag_blogs': tag_blogs,
+            'tag_name': tag_name,
+            'tag_blog_nums': tag_blog_nums,
+        })
+        
+> 模版文件tag-detail
+
+	{% for blog in tag_blogs.object_list %}
+	<article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" 
+	style="opacity: 1; display: block; transform: translateY(0px);">               
+    <header class="post-header">
+	<h1 class="post-title">
+	<a class="post-title-link" href="{% url 'blog_id' blog.id %}" itemprop="url">
+	<span style="padding-left:20px;" itemprop="name">{{ blog.title }}</span>
+	</a>
+	</h1>
+	<div class="post-meta">
+	<time class="post-time" itemprop="dateCreated" datetime="2017-09-01T20:05:18+08:00" 
+	content="2017-09-01">
+	{{ blog.create_time|date:"y-m-d" }}
+	</time>
+	</div>
+	</header>
+	</article>
+	{% endfor %}
 
 ## 本项目GitHub地址:
 
