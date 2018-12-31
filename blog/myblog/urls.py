@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from myblog.views import IndexView, ArchiveView, BlogDetailView, TagView, TagDetailView
+from myblog.views import IndexView, ArchiveView, BlogDetailView, TagView, TagDetailView, CategoryDetailView
 from myblog.feeds import BlogRssFeed
 
 urlpatterns = [
@@ -10,4 +10,5 @@ urlpatterns = [
     path('tags/', TagView.as_view(), name='tags'),
     re_path(r'tags/(?P<tag_name>\w+)$', TagDetailView.as_view(), name='tag_name'),
     re_path(r'^rss/$', BlogRssFeed(), name='rss'),
+    re_path(r'^category/(?P<category_name>\w+)$', CategoryDetailView.as_view(), name='category_name'),
 ]   

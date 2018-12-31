@@ -38,12 +38,12 @@
     <div id="content" class="content">
         <section id="posts" class="posts-collapse">
             <span class="archive-move-on"></span>
-            <span class="archive-page-counter">{{ tag_name }}目前共计 {{ tag_blog_nums }} 篇日志。</span>
+            <span class="archive-page-counter">{{ category_name }}目前共计 {{ category_blog_nums }} 篇日志。</span>
 
                 <div class="collection-title">
                     <h2 class="archive-year motion-element" id="archive-year-2018" style="opacity: 1; display: block; transform: translateX(0px);">{{ tag_name }}</h2>
                 </div>
-                {% for blog in tag_blogs.object_list %}
+                {% for blog in category_blogs.object_list %}
                     <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article" style="opacity: 1; display: block; transform: translateY(0px);">
                         <header class="post-header">
 

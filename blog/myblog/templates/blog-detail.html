@@ -6,7 +6,7 @@
 
 {% block blogcount %}
     <div class="site-state-item site-state-posts">
-        <a href="http://www.liaoxin.online:5001/myblog/archive/">
+        <a href="{% url 'archive' %}">
             <span class="site-state-item-count">{{blog_nums}}</span>
             <span class="site-state-item-name">日志</span>
         </a>
@@ -15,14 +15,14 @@
 
 {% block category_count %}
 <div class="site-state-item site-state-categories">
-    <span class="site-state-item-count">{{cate_nums}}</span>
-    <span class="site-state-item-name">分类</span>
+        <span class="site-state-item-count">{{cate_nums}}</span>
+        <span class="site-state-item-name">分类</span>
 </div>
 {% endblock %}
 
 {% block tag_count %}
 <div class="site-state-item site-state-tags">
-    <a href="http://www.liaoxin.online:5001/myblog/tags/">
+    <a href="{% url 'tags' %}">
         <span class="site-state-item-count">{{tag_nums}}</span>
         <span class="site-state-item-name">标签</span>
     </a>
@@ -53,7 +53,7 @@
                             </span>
                             <span class="post-meta-item-text">分类于</span>
                             <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                                <a href="http://www.liaoxin.online:5001/category/" itemprop="url" rel="index">
+                                <a href="{% url 'category_name' blog.category.name %}" itemprop="url" rel="index">
                                     <span itemprop="name">
                                         {{blog.category.name}}
                                     </span>

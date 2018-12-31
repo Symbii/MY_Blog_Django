@@ -9,7 +9,7 @@
 
 {% block blogcount %}
     <div class="site-state-item site-state-posts">
-        <a href="http://www.liaoxin.online:5001/myblog/archive/">
+        <a href="{% url 'archive' %}">
             <span class="site-state-item-count">{{blog_nums}}</span>
             <span class="site-state-item-name">日志</span>
         </a>
@@ -25,7 +25,7 @@
 
 {% block tag_count %}
 <div class="site-state-item site-state-tags">
-    <a href="http://www.liaoxin.online:5001/myblog/tags/">
+    <a href="{% url 'tags' %}">
         <span class="site-state-item-count">{{tag_nums}}</span>
         <span class="site-state-item-name">标签</span>
     </a>
@@ -62,7 +62,7 @@
                                     </span>
                                     <span class="post-meta-item-text">分类于</span>
                                     <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                                        <a href="http://www.liaoxin.online:5001/category/" itemprop="url" rel="index">
+                                        <a href="{% url 'category_name' each_blog.category.name %}" itemprop="url" rel="index">
                                             <span itemprop="name">
                                                 {{each_blog.category.name}}
                                             </span>

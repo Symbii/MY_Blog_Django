@@ -1,7 +1,7 @@
 from pure_pagination import PageNotAnInteger, Paginator
 from django.shortcuts import render
 from django.views import View
-from myblog.models import Blog, Counts, Tag
+from myblog.models import Blog, Counts, Tag, Category
 from django.http import HttpResponse
 from django.db import connection
 import markdown
@@ -162,6 +162,12 @@ class TagDetailView(View):
         tag_blogs = tag.blog_set.all()
         tag_blog_nums = tag.blog_set.count()
 
+        # 博客、标签、分类数目统计
+        count_nums = Counts.objects.get()
+        blog_nums = count_nums.blog_nums
+        cate_nums = count_nums.category_nums
+        tag_nums = count_nums.tag_nums
+
         # 分页
         try:
             page = request.GET.get('page', 1)
@@ -174,8 +180,42 @@ class TagDetailView(View):
             'tag_blogs': tag_blogs,
             'tag_name': tag_name,
             'tag_blog_nums': tag_blog_nums,
+            'tag_nums': tag_nums,
+            'blog_nums': blog_nums,
+            "cate_nums" : cate_nums,  
         })
 
+class CategoryDetailView(View):
+    """
+    博客分类下所包含的博客文章
+    """
+    def get(self, request, category_name):
+        category = Category.objects.filter(name=category_name).first()
+        category_blogs = category.blog_set.all()
+        category_blog_nums = category.blog_set.count()
+
+        # 博客、标签、分类数目统计
+        count_nums = Counts.objects.get()
+        blog_nums = count_nums.blog_nums
+        cate_nums = count_nums.category_nums
+        tag_nums = count_nums.tag_nums
+
+        # 分页
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+
+        p = Paginator(category_blogs, 5, request=request)
+        category_blogs = p.page(page)
+        return render(request, 'category-detail.html', {
+            'category_blogs': category_blogs,
+            'category_name': category_name,
+            'category_blog_nums': category_blog_nums,
+            'tag_nums': tag_nums,
+            'blog_nums': blog_nums,
+            "cate_nums" : cate_nums,  
+        })
 
 def page_not_found(request):
     return render(request, '404.html')
