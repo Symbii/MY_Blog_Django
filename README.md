@@ -717,6 +717,41 @@ admin.py，blogAdmin，save_model方法:
 	</article>
 	{% endfor %}
 
+
+## 增加RSS功能
+
+1.新建feeds.py，这里利用reverse函数获取到url地址，请尽量多使用reverse 和 在模版中使用url标签，这样子可以避免网址变更产生的繁琐修改等等。有关django的feed类可以查询：[django官方文档关于Feed介绍](https://docs.djangoproject.com/zh-hans/2.0/_modules/django/contrib/syndication/views/)
+	
+	from django.contrib.syndication.views import Feed
+	from django.urls import reverse
+	from myblog.models import Blog
+
+	class BlogRssFeed(Feed):
+	    title = "温文尔雅阁"
+	    link = "/rss/"
+	    def items(self):
+	        return Blog.objects.all()
+	    def item_title(self, item):
+	        return item.title
+	    def item_description(self, item):
+	        return item.content
+	    def item_link(self, item):
+	        return reverse('blog_id', args=[item.id,])
+
+2.urls.py中添加：
+
+	from myblog.feeds import BlogRssFeed
+	re_path(r'^rss/$', BlogRssFeed(), name='rss'),
+
+3.模版文件base.html
+	
+	<div class="feed-link motion-element">
+		<a href="{% url 'rss' %}" rel="alternate">
+		<i class="fa fa-rss"></i>
+		RSS
+		</a>
+	</div>
+
 ## 本项目GitHub地址:
 
 1. 项目github地址：请访问[我的GitHub地址](https://github.com/Symbii)
