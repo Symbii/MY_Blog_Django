@@ -17,7 +17,12 @@ class IndexView(View):
 
         #all_blog加markdown样式
         for blog in all_blog:
-            blog.content = markdown.markdown(blog.content)
+            blog.content = markdown.markdown(blog.content, 
+                                             extensions=[
+                                                 'markdown.extensions.extra',
+                                                 'markdown.extensions.codehilite',
+                                                 'markdown.extensions.toc',             
+                                            ])
 
         # 博客、标签、分类数目统计
         count_nums = Counts.objects.get()
@@ -111,7 +116,7 @@ class BlogDetailView(View):
             if not blog_next:
                 id_next += 1
             else:
-                has_next = True;
+                has_next = True
 
 
         blog.content = markdown.markdown(blog.content)
