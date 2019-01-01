@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'haystack',
-    'myblog.apps.MyblogConfig', #新加入的app
+    'haystack',                 #搜索工具
     'pure_pagination',          #分页工具
+    'myblog.apps.MyblogConfig', #新加入的app
+    'myblog.templatetags'       #自定义模版标签和过滤器
 ]
 
 MIDDLEWARE = [
@@ -147,5 +148,9 @@ HAYSTACK_CONNECTIONS = {
         'PATH': os.path.join(BASE_DIR, 'whoosh_index'),
     },
 }
+
+#haysta每页显示数量
 HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+
+#对应model有更新时候自动更新索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
