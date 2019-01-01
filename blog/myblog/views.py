@@ -4,6 +4,8 @@ from django.views import View
 from myblog.models import Blog, Counts, Tag, Category
 from django.http import HttpResponse
 from django.db import connection
+from blog.settings import HAYSTACK_SEARCH_RESULTS_PER_PAGE
+from haystack.views import SearchView
 import markdown
 
 # Create your views here.
@@ -216,6 +218,39 @@ class CategoryDetailView(View):
             'blog_nums': blog_nums,
             "cate_nums" : cate_nums,  
         })
+
+class MySearchView(SearchView):
+    """
+    复用搜索源码，将其余内容添加进来
+    """
+    def extra_context(self):
+        context = super(MySearchView, self).extra_context()
+        # 博客、标签、分类数目统计
+        count_nums = Counts.objects.get(id=1)
+
+        context['cate_nums'] = count_nums.category_nums
+        context['tag_nums'] = count_nums.tag_nums
+        context['blog_nums'] = count_nums.blog_nums
+        return context
+
+    def build_page(self):
+        #分页重写
+        super(MySearchView, self).extra_context()
+
+        try:
+            page_no = int(self.request.GET.get('page', 1))
+        except PageNotAnInteger:
+            raise HttpResponse("Not a valid number for page.")
+
+        if page_no < 1:
+            raise HttpResponse("Pages should be 1 or greater.")
+
+
+        paginator = Paginator(self.results, HAYSTACK_SEARCH_RESULTS_PER_PAGE, request=self.request)
+        page = paginator.page(page_no)
+
+        return (paginator, page)
+
 
 def page_not_found(request):
     return render(request, '404.html')

@@ -123,11 +123,11 @@
 
                         <li class="menu-item menu-item-archives" style="opacity: 1; transform: translateY(0px);">
 
-                            <a href="http://www.liaoxin.online:5001/myblog/#search" id="search" rel="section">
+                            <a href="{% url 'haystack_search' %}" id="search" rel="section">
                               <i class="menu-item-icon fa fa-search"></i>
                             </a>
 
-                            <form action="http://www.liaoxin.online:5001/myblog/search/">
+                            <form action="{% url 'haystack_search' %}">
                                 <input id="unit" type="search" name="q" placeholder="搜索">
                             </form>
 
