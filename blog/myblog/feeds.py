@@ -4,7 +4,7 @@ from myblog.models import Blog
 
 class BlogRssFeed(Feed):
 
-    title = "geerniya的博客小屋"
+    title = "温文尔雅阁"
     link = "/rss/"
     def items(self):
         return Blog.objects.all()
