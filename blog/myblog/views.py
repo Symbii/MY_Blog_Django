@@ -223,15 +223,15 @@ class MySearchView(SearchView):
     """
     复用搜索源码，将其余内容添加进来
     """
-    def extra_context(self):
-        context = super(MySearchView, self).extra_context()
-        # 博客、标签、分类数目统计
-        count_nums = Counts.objects.get(id=1)
+    #def extra_context(self):
+    #    context = super(MySearchView, self).extra_context()
+    #    # 博客、标签、分类数目统计
+    #    count_nums = Counts.objects.get()
 
-        context['cate_nums'] = count_nums.category_nums
-        context['tag_nums'] = count_nums.tag_nums
-        context['blog_nums'] = count_nums.blog_nums
-        return context
+    #    context['cate_nums'] = count_nums.category_nums
+    #    context['tag_nums'] = count_nums.tag_nums
+    #    context['blog_nums'] = count_nums.blog_nums
+    #    return context
 
     def build_page(self):
         #分页重写
@@ -250,7 +250,6 @@ class MySearchView(SearchView):
         page = paginator.page(page_no)
 
         return (paginator, page)
-
 
 def page_not_found(request):
     return render(request, '404.html')

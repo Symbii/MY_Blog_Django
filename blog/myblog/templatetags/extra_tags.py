@@ -10,8 +10,17 @@ register = template.Library()
 
 @register.filter(name='mymarkdown')  # 过滤器在模板中使用时的name
 def mymarkdown(value):               # 这里还可以通过arg把传递过来的参数arg给过滤器添加参数
-   return markdown.markdown(value)   
-
+   return markdown.markdown(value, 
+                            extensions=[
+                                'markdown.extensions.extra',
+                                'markdown.extensions.codehilite',
+                                'markdown.extensions.toc',             
+                            ])
+                            
+@register.filter(name='multiply')
+def multiply(value, num):
+    #定义一个乘法过滤器
+    return (value-1)*num
 
 #@register.tag(name='mymarkdown') #标签在模板中使用时的名字
 # 解析器

@@ -41,7 +41,7 @@
 
     <div>
         <a href="{% url 'blog_id' blog.object.id %}">
-            <h3>{{ forloop.counter }}、{% myhighlight blog.object.title with query max_length 100 start_head True %}</h3>
+            <h3>{{ page.number|multiply:HAYSTACK_SEARCH_RESULTS_PER_PAGE|add:forloop.counter }}、{% myhighlight blog.object.title with query max_length 100 start_head True %}</h3>
         </a>
 
         <div style="word-wrap: break-word">
@@ -50,12 +50,12 @@
 
 
         {% if forloop.counter == page.object_list|length %}
-            {% else %}
+        {% else %}
             <hr>
         {% endif %}
     </div>
 {% empty %}
-    <div class="no-post">没有搜索到相关内容，请重新搜索</div>
+    <div class="no-post">没有搜索到相关内容</div>
 {% endfor %}
 
 

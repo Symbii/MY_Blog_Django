@@ -67,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'myblog.context_processors.pageNums',
             ],
         },
     },
@@ -140,7 +141,6 @@ PAGINATION_SETTINGS = {
     'SHOW_FIRST_PAGE_WHEN_INVALID': True,
 }
 
-
 #haystack
 HAYSTACK_CONNECTIONS = {
     'default': {
@@ -150,7 +150,7 @@ HAYSTACK_CONNECTIONS = {
 }
 
 #haysta每页显示数量
-HAYSTACK_SEARCH_RESULTS_PER_PAGE = 10
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
 
 #对应model有更新时候自动更新索引
 HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
