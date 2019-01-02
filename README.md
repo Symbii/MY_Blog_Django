@@ -361,40 +361,47 @@ app:myblog下面的目录结构，此处删掉了一些目前还不用的目录�
 
 	`pip intall django-pure-pagination`
 
-2. 装好之后看pypi.org里面包的使用说明，这里我只想说一句Fxxk，这里作者自己写的需要在setting.py里面设置install_apps,但是这个包装完之后是在lib目录下的，所以根本不需要在install_apps添加的，我一度以为需要手动创建这个app[坑]，但是任然需要设置PAGINATION_SETTINGS的：
+2. 设置PAGINATION_SETTINGS和INSTALLED_APPS：
 
-```
-	PAGINATION_SETTINGS = {
-	    'PAGE_RANGE_DISPLAYED': 3,    #中间显示的个数，中间和两边之间其他的以省略号显示
-	    'MARGIN_PAGES_DISPLAYED': 2,  #靠近上一页和下一页两边显示的个数 
-	    'SHOW_FIRST_PAGE_WHEN_INVALID': True,
-	}
-```
+		INSTALLED_APPS = [
+		'django.contrib.admin',
+		'django.contrib.auth',
+		'django.contrib.contenttypes',
+		'django.contrib.sessions',
+		'django.contrib.messages',
+		'django.contrib.staticfiles',
+		'haystack',                 #搜索工具
+		'pure_pagination',          #分页工具
+		'myblog.apps.MyblogConfig', #新加入的app
+		'myblog.templatetags'       #自定义模版标签和过滤器
+		]
+		PAGINATION_SETTINGS = {
+		'PAGE_RANGE_DISPLAYED': 3,    #中间显示的个数，中间和两边之间其他的以省略号显示
+		'MARGIN_PAGES_DISPLAYED': 2,  #靠近上一页和下一页两边显示的个数 
+		'SHOW_FIRST_PAGE_WHEN_INVALID': True,
+		}
+
 
 3. 上面做完之后，就可以设置视图方法和修改index.html了，将IndexView类的get方法改为：
 
-```
-	class IndexView(View):
-	    """
-	    首页,继承view，as_view()自动根据请求，调用对应的方法
-	    """
-	    def get(self, request):
-		all_blog = Blog.objects.all().order_by('-id')
 
-		try:
-		    page = request.GET.get('page', 1)
-		except PageNotAnInteger:
-		    page = 1
-
-		#设置每页只显示一篇，生成paginator对象
-		p = Paginator(all_blog, 1, request=request)
-
-		#根据之前的到1-based page， 生成分页好的page对象
-		all_page_blog = p.page(page)
-
-		#将分页好的page对象传入index.html
-		return render(request, 'index.html', {"blog": all_page_blog})
-```        
+		class IndexView(View):
+			"""
+			首页,继承view，as_view()自动根据请求，调用对应的方法
+			"""
+			def get(self, request):
+			all_blog = Blog.objects.all().order_by('-id')
+			try:
+			page = request.GET.get('page', 1)
+			except PageNotAnInteger:
+			page = 1
+			#设置每页只显示一篇，生成paginator对象
+			p = Paginator(all_blog, 1, request=request)
+			#根据之前的到1-based page， 生成分页好的page对象
+			all_page_blog = p.page(page)
+			#将分页好的page对象传入index.html
+			return render(request, 'index.html', {"blog": all_page_blog})
+       
 这里贴一部分从lib中看到的paginator源码，帮助理解上面我写的：
     
 	class Paginator(object):
@@ -1230,7 +1237,85 @@ admin.py，blogAdmin，save_model方法:
 	{% load extra_tag %}
 	
 	{% myhighlight blog.object.content with query max_length 100 start_head True %}
+
+##  搜索结果编号连续
+
+1. 如果我们需要添加东西在search.html中，我们需要重写haystack的视图函数
+
+> view.py
+
+	from haystack.views import SearchView
+from blog.settings import HAYSTACK_SEARCH_RESULTS_PER_PAGE
+
+class MySearchView(SearchView):
+
+    def build_page(self):
+        #分页重写
+        super(MySearchView, self).extra_context()
+
+        try:
+            page_no = int(self.request.GET.get('page', 1))
+        except PageNotAnInteger:
+            raise HttpResponse("Not a valid number for page.")
+
+        if page_no < 1:
+            raise HttpResponse("Pages should be 1 or greater.")
+
+
+        paginator = Paginator(self.results, HAYSTACK_SEARCH_RESULTS_PER_PAGE, request=self.request)
+        page = paginator.page(page_no)
+
+        return (paginator, page)
+> url改为：
+
+	re_path(r'^search/', MySearchView(),  name='haystack_search'),
+
+> 搜索结果添加序号时候发现使用```{{ forloop.counter }}```每个page都是从1开始的。如果需要从上一页递增显示，需要获得当前页面的页码，乘以每页展示的对象数目，在加上```{{ forloop.counter }}```即可.由于不存在乘法过滤器，这里我们需要按照之前的套路写一个乘法过滤器，这里就不多描述，直接上代码extra_tags：
 	
+	@register.filter(name='multiply')
+	def multiply(value, num):
+	    #定义一个乘法过滤器
+	    return (value-1)*num
+
+>这样子我们在模版文件中只需要像下面这样修改就好了：
+
+	{{ page.number|multiply:5|add:forloop.counter }}、{% myhighlight blog.object.title with query max_length 100 start_head True %}
+
+这里5就是我在setting中设置的每页显示数目，这样非常不好，如果我改了setting这里也得改，我们需要想办法把配置常量也导入模板中，供模板文件使用。
+
+> 将setting中的设定，导入上下文管理器，在我的app目录下，即myblog目录下新建一个context_processors.py，写入：
+
+	from django.conf import settings
+
+	def pageNums(request):
+	    return {"HAYSTACK_SEARCH_RESULTS_PER_PAGE": settings.HAYSTACK_SEARCH_RESULTS_PER_PAGE}
+	   
+> 将其添加进模板配置中：
+
+settings：
+
+	TEMPLATES = [
+	    {
+	        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+	        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+	        'APP_DIRS': True,
+	        'OPTIONS': {
+	            'context_processors': [
+	                'django.template.context_processors.debug',
+	                'django.template.context_processors.request',
+	                'django.contrib.auth.context_processors.auth',
+	                'django.contrib.messages.context_processors.messages',
+	                'myblog.context_processors.pageNums',
+	            ],
+	        },
+	    },
+	]
+
+> 直接在模板文件中使用：
+
+	{{ page.number|multiply:HAYSTACK_SEARCH_RESULTS_PER_PAGE|add:forloop.counter }}
+
+这样子搜索结果的序号就变得连续了。
 
 ## 本项目GitHub地址:
 
