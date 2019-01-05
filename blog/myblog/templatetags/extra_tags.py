@@ -35,6 +35,10 @@ def NumofCategory(value):
 def NumofTag(value):
     return Counts.objects.get().tag_nums
 
+@register.filter(name='visit_nums')
+def Visitnum(value):
+    return Counts.objects.get().visit_nums
+
 #@register.tag(name='mymarkdown') #标签在模板中使用时的名字
 # 解析器
 #def my_markdown(parse, token):  # parse解析器对象，token被解析的对象，包含标签的名字和格式化的格式

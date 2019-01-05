@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
 {% load staticfiles %}
+{% load extra_tags %}
+
 <!-- saved from url=(0023)http://www.liaoxin.online:5001/myblog/ -->
 <html class="theme-next pisces use-motion" lang="zh-Hans"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
@@ -230,11 +232,13 @@
                     <span class="with-love">
                         <i class="fa fa-heart"></i>
                     </span>
-                    <span class="author" itemprop="copyrightHolder">未闻花名</span>
+                    <span class="author" itemprop="copyrightHolder">廖欣</span>
                 </div>
                 <div class="theme-info">
+                    本站访问量：{{ 本站访问量|visit_nums }}<br>
                     Supported by <a href="https://www.aliyun.com/">阿里云</a>
                 </div>
+
             </div>
         </footer>
 

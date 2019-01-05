@@ -30,7 +30,13 @@ class IndexView(View):
         count_nums = Counts.objects.get()
         blog_nums = count_nums.blog_nums
         cate_nums = count_nums.category_nums
-        tag_nums = count_nums.tag_nums
+        tag_nums  = count_nums.tag_nums
+
+        #计算访问量
+        visit_nums = count_nums.visit_nums
+        visit_nums += 1
+        count_nums.visit_nums = visit_nums
+        count_nums.save()
 
         try:
             page = request.GET.get('page', 1)
@@ -45,6 +51,7 @@ class IndexView(View):
             "blog_nums":blog_nums,
             "cate_nums" : cate_nums,
             "tag_nums"  : tag_nums,
+            "visit_nums" : visit_nums,
         })
 
 class ArchiveView(View):
@@ -91,15 +98,24 @@ class BlogDetailView(View):
         tag_names = []
         cursor = connection.cursor()
 
-        #获取标签名字，采用sql语句获取 ，也可以直接blog.tag.all
-        sql_cmd = "select tag_id from myblog_blog_tag where blog_id = {0};".format(blog_id)
-        cursor.execute(sql_cmd)
-        row_tag_id = cursor.fetchall()
-        for row_each_tag in row_tag_id: 
-            sql_cmd = "select name from myblog_tag where id = {0};".format(row_each_tag[0])
-            cursor.execute(sql_cmd)
-            row_each_name = cursor.fetchone()
-            tag_names.append(row_each_name[0])
+        # 计算博文点击量
+        click_nums = blog.click_nums
+        click_nums += 1
+        blog.click_nums = click_nums
+        blog.save()
+
+        #获取标签名字，采用sql语句获取
+        #sql_cmd = "select tag_id from myblog_blog_tag where blog_id = {0};".format(blog_id)
+        #cursor.execute(sql_cmd)
+        #row_tag_id = cursor.fetchall()
+        #for row_each_tag in row_tag_id: 
+        #    sql_cmd = "select name from myblog_tag where id = {0};".format(row_each_tag)
+        #    cursor.execute(sql_cmd)
+        #    row_each_name = cursor.fetchone()
+        #    tag_names.append(row_each_name[0])
+
+        tag_names = blog.tag.all()
+        print(tag_names)
 
         # 实现博客上一篇与下一篇功能
         has_prev = False
