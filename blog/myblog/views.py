@@ -115,7 +115,6 @@ class BlogDetailView(View):
         #    tag_names.append(row_each_name[0])
 
         tag_names = blog.tag.all()
-        print(tag_names)
 
         # 实现博客上一篇与下一篇功能
         has_prev = False
