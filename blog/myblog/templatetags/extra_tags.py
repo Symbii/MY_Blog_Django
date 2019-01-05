@@ -2,7 +2,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from django import template
 from django.conf import settings  
 from django.core.exceptions import ImproperlyConfigured  
-from django.utils import six  
+from django.utils import six
+from myblog.models import Counts
   
 from haystack.utils import importlib  
 import markdown
@@ -21,6 +22,18 @@ def mymarkdown(value):               # 这里还可以通过arg把传递过来�
 def multiply(value, num):
     #定义一个乘法过滤器
     return (value-1)*num
+
+@register.filter(name='blog_nums')
+def NumofBlog(value):
+    return Counts.objects.get().blog_nums
+
+@register.filter(name='category_nums')
+def NumofCategory(value):
+    return Counts.objects.get().category_nums
+
+@register.filter(name='tag_nums')
+def NumofTag(value):
+    return Counts.objects.get().tag_nums
 
 #@register.tag(name='mymarkdown') #标签在模板中使用时的名字
 # 解析器

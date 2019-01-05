@@ -73,9 +73,44 @@ class BlogAdmin(admin.ModelAdmin):
 class CountsAdmin(admin.ModelAdmin):
     list_display = ['blog_nums', 'category_nums', 'tag_nums', 'visit_nums']
 
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'number']
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        category_nums = Category.objects.count()
+        count_nums = Counts.objects.get()
+        count_nums.category_nums = category_nums
+        count_nums.save()
+
+    def delete_model(self, request, obj):
+        obj.delete()
+        category_nums = Category.objects.count()
+        count_nums = Counts.objects.get()
+        count_nums.category_nums = category_nums
+        count_nums.save()
+
+class TagAdmin(admin.ModelAdmin):
+    list_display = ['name', 'number']
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        tag_nums = Tag.objects.count()
+        count_nums = Counts.objects.get()
+        count_nums.tag_nums = tag_nums
+        count_nums.save()
+
+    def delete_model(self, request, obj):
+        obj.delete()
+        tag_nums = Tag.objects.count()
+        count_nums = Counts.objects.get()
+        count_nums.tag_nums = tag_nums
+        count_nums.save()
+
+
 # Register your models here.
-admin.site.register(Category)
-admin.site.register(Tag)
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Tag, TagAdmin)
 admin.site.register(Blog, BlogAdmin)
 admin.site.register(Comment)
 admin.site.register(Counts, CountsAdmin)
