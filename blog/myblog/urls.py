@@ -1,5 +1,6 @@
 from django.urls import path, re_path, include
-
+from django.views.static import serve
+from blog.settings import STATIC_ROOT
 from myblog.views import IndexView, ArchiveView, BlogDetailView, TagView, TagDetailView, CategoryDetailView, MySearchView
 from myblog.feeds import BlogRssFeed
 
@@ -12,5 +13,7 @@ urlpatterns = [
     re_path(r'^rss/$', BlogRssFeed(), name='rss'),
     re_path(r'^category/(?P<category_name>\w+)$', CategoryDetailView.as_view(), name='category_name'),
     re_path(r'^search/', MySearchView(),  name='haystack_search'),
+    re_path(r'^static/(?P<path>.*)/$', serve, {'document_root': STATIC_ROOT}),
     #path('search/',include('haystack.urls')),
 ]   
+
