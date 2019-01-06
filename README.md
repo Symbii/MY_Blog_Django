@@ -1317,11 +1317,114 @@ settings：
 
 这样子搜索结果的序号就变得连续了。
 
+	
+## Nginx和Uwsgi生产环境常规部署项目
+
+> 安装nginx
+
+```
+yum install nginx
+```
+
+> 安装uwsgi
+
+```
+pip install uwsgi
+```
+
+>在project目录下创建一个conf目录统一管理，创建一个myblog_uwsgi.ini:
+
+myblog_uwsgi.ini:
+
+	#myblog_uwsgi.ini file
+	[uwsgi]
+	# Django-related settings
+	# the base directory (full path)
+	chdir           = /root/django/myblog_code/blog
+	# Django's wsgi file
+	module          = blog.wsgi
+	# the virtualenv (full path)
+	# process-related settings
+	# master
+	master          = true
+	# maximum number of worker processes
+	processes       = 5
+	# the socket (use the full path to be safe), connect with nginx
+	socket          = 127.0.0.1:5003
+	# ... with appropriate permissions - may be needed
+	# chmod-socket    = 664
+	# clear environment on exit
+	vacuum          = true
+	virtualenv = /root/django/env-py3/myblog
+
+> 创建myblog_nginx.conf
+
+	#stream component nginx needs to connect to
+	upstream django {
+	# server unix:///path/to/your/mysite/mysite.sock; # for a file socket
+		
+	# for a web port socket (we'll use this first),connect uwsgi
+	server 127.0.0.1:5003;
+		
+	}
+	# configuration of the server
+	server {
+	    # the port your site will be served on
+	    listen 5001;
+	    # the domain name it will serve for
+	    # substitute your machine's IP address or FQDN
+	    server_name 10.10.10.10 www.liaoxin.online;
+	    charset     utf-8;
+	    # max upload size
+	    client_max_body_size 75M;   # adjust to taste
+	    # Django media
+	    location /media  {
+	        alias /root/django/myblog_code/blog/media/;  # 指向django的media目录
+	    }
+	    location /static {
+	        alias /root/django/myblog_code/blog/static/; # 指向django的static目录
+	    }
+	    # Finally, send all non-media requests to the Django server.
+	    location / {
+	        uwsgi_pass  django;
+	        include     uwsgi_params; # the uwsgi_params file you installed
+	    }
+	}
+
+> 在/etc/nginx/nginx.conf中看到‘’‘include /etc/nginx/conf.d/*.conf’‘’这个目录中，所以我们需要将我们配置文件链接到这个目录中即可：
+
+	ln -s /root/django/myblog_code/blog/conf/blog_nginx.conf  /etc/nginx/conf.d/blog_nginx.conf
+		
+> 修改settings.py:
+
+
+	#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+	STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
+> url中添加：
+
+	from django.views.static import serve
+	re_path(r'^static/(?P<path>.*)/$', serve, {'document_root': STATIC_ROOT}),
+
+> 将项目中所有static文件都收集起来
+
+	python manage.py collectstatic
+
+> 启动uwsgi
+
+	nohup uwsgi -i myblog_uwsgi.ini > myblog.out
+
+> 启动nginx：
+
+	service nginx start
+
+> 这样子我们就常规部署好了 nginx+uwsgi+django的生产环境。后面还得再研究下用docker打包，将其拆开成多个docker：nginx弄成一个单独的docker，mysql单独一个，uwsgi+django弄成一个docker
+
+
 ## 本项目GitHub地址:
 
 1. 项目github地址：请访问[我的GitHub地址](https://github.com/Symbii)
-
-
 
 
 ## 遇到的坑
