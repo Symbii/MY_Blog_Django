@@ -135,8 +135,13 @@ class BlogDetailView(View):
             else:
                 has_next = True
 
-
-        blog.content = markdown.markdown(blog.content)
+        blog.content = markdown.markdown(blog.content, 
+                                         extensions=[
+                                             'markdown.extensions.extra',
+                                             'markdown.extensions.codehilite',
+                                             'markdown.extensions.toc',             
+                                        ])
+                                        
         return render(request, 'blog-detail.html', {
             'blog': blog,
             "blog_nums" : blog_nums,
